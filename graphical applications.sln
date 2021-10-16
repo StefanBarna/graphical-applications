@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "draw win app", "draw win app\draw win app.vcxproj", "{9CDF09DB-DA93-40F9-ADEE-7172FC8103C8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9CDF09DB-DA93-40F9-ADEE-7172FC8103C8}.Debug|x64.ActiveCfg = Debug|x64
+		{9CDF09DB-DA93-40F9-ADEE-7172FC8103C8}.Debug|x64.Build.0 = Debug|x64
+		{9CDF09DB-DA93-40F9-ADEE-7172FC8103C8}.Debug|x86.ActiveCfg = Debug|Win32
+		{9CDF09DB-DA93-40F9-ADEE-7172FC8103C8}.Debug|x86.Build.0 = Debug|Win32
+		{9CDF09DB-DA93-40F9-ADEE-7172FC8103C8}.Release|x64.ActiveCfg = Release|x64
+		{9CDF09DB-DA93-40F9-ADEE-7172FC8103C8}.Release|x64.Build.0 = Release|x64
+		{9CDF09DB-DA93-40F9-ADEE-7172FC8103C8}.Release|x86.ActiveCfg = Release|Win32
+		{9CDF09DB-DA93-40F9-ADEE-7172FC8103C8}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AE6A5940-6876-47F3-9F42-7BA4D9619AE7}
+	EndGlobalSection
+EndGlobal

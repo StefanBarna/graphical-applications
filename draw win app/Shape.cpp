@@ -1,0 +1,91 @@
+#include <strsafe.h>
+#include "Shape.h"
+using namespace Gdiplus;
+
+int Shape::m_cnt = 0;
+
+Shape::Shape() {
+	this->m_cnt++;
+	this->m_id = this->m_cnt;
+	this->m_x = 0;
+	this->m_y = 0;
+	this->m_width = 0;
+}
+
+Shape::Shape(int x, int y, int width, bool save) {
+	if (save)
+		this->m_cnt++;
+	this->m_id = this->m_cnt;
+	this->m_x = x;
+	this->m_y = y;
+	this->m_width = width;
+}
+
+bool Shape::overlap(Shape& selected) {
+	bool overlap = false;
+
+	if (((this->getX() - (this->getWidth() / 2)) >= (selected.getX() + (selected.getWidth() / 2))
+		|| (selected.getX() - (selected.getWidth() / 2)) >= (this->getX() + (this->getWidth() / 2)))
+		|| ((this->getY() - (this->getWidth() / 2)) >= (selected.getY() + (selected.getWidth() / 2))
+			|| (selected.getY() - (selected.getWidth() / 2)) >= (this->getY() + (this->getWidth() / 2))))
+		overlap = false;
+	else if (this != &selected)
+		overlap = true;
+
+	return overlap;
+}
+
+void Shape::drawID(Graphics& graphics) {
+	// parameters for text
+	Font myFont(L"Tahoma", 14);
+	SolidBrush brush(Color::Black);
+	TCHAR ID[31]; // maximum ID is 10^31
+	StringCchPrintf(ID, 31, TEXT("%d"), this->m_id);
+
+	// measure the size of the string
+	RectF layoutRect(0.0f, 0.0f, 100.0f, 50.0f);
+	StringFormat format;
+	RectF boundRect;
+	graphics.MeasureString(ID, -1, &myFont, layoutRect, &format, &boundRect);
+	
+	// draw the string to the circle
+	PointF origin(this->m_x - (boundRect.Width / 2), this->m_y - (boundRect.Height / 2));
+	graphics.DrawString(ID, -1, &myFont, origin, &brush);
+}
+
+int Shape::getX() {
+	return this->m_x;
+}
+
+int Shape::getY() {
+	return this->m_y;
+}
+
+int Shape::getWidth() {
+	return this->m_width;
+}
+
+int Shape::getID() {
+	return this->m_id;
+}
+
+void Shape::setX(int x) {
+	this->m_x = x;
+}
+
+void Shape::setY(int y) {
+	this->m_y = y;
+}
+
+void Shape::setWidth(int width) {
+	this->m_width = width;
+}
+
+void Shape::setPos(int x, int y) {
+	this->m_x = x;
+	this->m_y = y;
+}
+
+int Shape::shapeCnt() {
+	return Shape::m_cnt;
+}
