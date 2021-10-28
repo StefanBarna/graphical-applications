@@ -18,7 +18,7 @@ void Circle::draw(Graphics& graphics) {
 	this->m_radius = this->getWidth() / 2; // TODO: this was a quick fix, fix the code elsewhere
 
 	// pen info
-	Color penColor = Color::Blue;
+	Color penColor = this->getColour();
 	double penWidth = 3.0;
 	Pen pen(penColor, penWidth);
 
@@ -30,7 +30,7 @@ void Circle::draw(Graphics& graphics) {
 }
 
 ostream& Circle::save(ostream& os) {
-	os << "c" << " " << this->getX() << " " << this->getY() << " " << this->m_radius << endl;
+	os << "c" << " " << this->getX() << " " << this->getY() << " " << this->m_radius << " " << (int)this->getColour().GetRed() << " " << (int)this->getColour().GetGreen() << " " << (int)this->getColour().GetBlue() << endl;
 	return os;
 }
 
@@ -38,16 +38,20 @@ istream& Circle::load(istream& is) {
 	is.ignore(2);
 
 	// set values from text file
-	int x, y, radius;
+	int x, y, radius, red, green, blue;
 	is >> x;
 	is >> y;
 	is >> radius;
+	is >> red;
+	is >> green;
+	is >> blue;
 
 	// set values
 	this->setX(x);
 	this->setY(y);
 	this->m_radius = radius;
 	this->setWidth(radius * 2);
+	this->setColour(Color(red, green, blue));
 
 	is.ignore(1);
 

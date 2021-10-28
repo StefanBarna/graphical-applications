@@ -3,13 +3,16 @@
 using namespace Gdiplus;
 
 int Shape::m_cnt = 0;
+int Shape::defaultWidth = 25;
+Color Shape::defaultBorderColour = Color(0, 0, 0);
 
 Shape::Shape() {
 	this->m_cnt++;
 	this->m_id = this->m_cnt;
 	this->m_x = 0;
 	this->m_y = 0;
-	this->m_width = 0;
+	this->m_width = this->defaultWidth;
+	this->m_colour = this->defaultBorderColour;
 }
 
 Shape::Shape(int x, int y, int width, bool save) {
@@ -19,6 +22,7 @@ Shape::Shape(int x, int y, int width, bool save) {
 	this->m_x = x;
 	this->m_y = y;
 	this->m_width = width;
+	this->m_colour = this->defaultBorderColour;
 }
 
 bool Shape::overlap(Shape& selected) {
@@ -69,6 +73,10 @@ int Shape::getID() {
 	return this->m_id;
 }
 
+Color Shape::getColour() {
+	return this->m_colour;
+}
+
 void Shape::setX(int x) {
 	this->m_x = x;
 }
@@ -84,6 +92,10 @@ void Shape::setWidth(int width) {
 void Shape::setPos(int x, int y) {
 	this->m_x = x;
 	this->m_y = y;
+}
+
+void Shape::setColour(Color colour) {
+	this->m_colour = colour;
 }
 
 int Shape::shapeCnt() {

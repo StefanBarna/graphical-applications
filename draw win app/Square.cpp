@@ -11,7 +11,7 @@ Square::Square(int x, int y, int width, bool save) : Shape(x, y, width, save) {}
 
 void Square::draw(Gdiplus::Graphics& graphics) {
 	// pen info
-	Color penColor = Color::Blue;
+	Color penColor = this->getColour();
 	double penWidth = 3.0;
 	Pen pen(penColor, penWidth);
 
@@ -24,7 +24,7 @@ void Square::draw(Gdiplus::Graphics& graphics) {
 }
 
 ostream& Square::save(ostream& os) {
-	os << "s" << " " << this->getX() << " " << this->getY() << " " << this->getWidth() << endl;
+	os << "s" << " " << this->getX() << " " << this->getY() << " " << this->getWidth() << " " << this->getColour().GetRed() << " " << this->getColour().GetGreen() << " " << this->getColour().GetBlue() << endl;
 	return os;
 }
 
@@ -32,15 +32,19 @@ istream& Square::load(istream& is) {
 	is.ignore(2);
 
 	// set values from text file
-	int x, y, width;
+	int x, y, width, red, green, blue;
 	is >> x;
 	is >> y;
 	is >> width;
+	is >> red;
+	is >> green;
+	is >> blue;
 
 	// set values
 	this->setX(x);
 	this->setY(y);
 	this->setWidth(width);
+	this->setColour(Color(red, green, blue));
 
 	is.ignore(1);
 

@@ -22,7 +22,7 @@ public:
 	/// <param name="y">y position</param>
 	/// <param name="radius">radius of circle</param>
 	/// <param name="save">false if the square is temporary, true otherwise</param>
-	Circle(int x, int y, int radius = 25, bool save = true);
+	Circle(int x, int y, int radius = Shape::defaultWidth, bool save = true);
 
 	// override expresses an interest in using a virtual function from a parent class
 	// it will show the function as an error if there isn't a function with the same prototype

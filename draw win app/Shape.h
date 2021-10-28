@@ -7,13 +7,18 @@
 
 class Shape {
 	// x and y are the coordinates for the center
-	static int m_cnt;	// number of created shapes
-	int m_id;			// the ID number of the current instance
-	int m_x;			// the instance location on the x axis
-	int m_y;			// the instance location on the y axis
-	int m_width;		// the width of the instance
+	int m_id;						// the ID number of the current instance
+	int m_x;						// the instance location on the x axis
+	int m_y;						// the instance location on the y axis
+	int m_width;					// the width of the instance
+	Gdiplus::Color m_colour;		// border colour of shape
+	static int m_cnt;				// number of created shapes
 
 public:
+	// static variables
+	static int defaultWidth;						// default shape width / radius
+	static Gdiplus::Color defaultBorderColour;	// default border colour of shape
+
 	/// <summary>
 	/// base constructor
 	/// </summary>
@@ -90,6 +95,12 @@ public:
 	int getID();
 
 	/// <summary>
+	/// colour getter
+	/// </summary>
+	/// <returns>the colour of the shape's border</returns>
+	Gdiplus::Color getColour();
+
+	/// <summary>
 	/// x setter
 	/// </summary>
 	/// <param name="x">the new x position</param>
@@ -113,6 +124,12 @@ public:
 	/// </summary>
 	/// <param name="width">the new width of the shape</param>
 	void setWidth(int width);
+
+	/// <summary>
+	/// colour setter
+	/// </summary>
+	/// <returns>the new colour of the shape border</returns>
+	void setColour(Gdiplus::Color colour);
 
 	/// <summary>
 	/// shape count getter
