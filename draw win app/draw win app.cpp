@@ -1,5 +1,4 @@
 // draw win app.cpp : Defines the entry point for the application.
-//
 
 #include <list>
 #include <Windows.h>
@@ -16,6 +15,7 @@
 #include "Shape.h"
 #include "Circle.h"
 #include "Utilities.h"
+#include "WinAPIShapes.h"
 
 using namespace Gdiplus;
 using namespace std;
@@ -30,23 +30,11 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 const DWORD WM_APPLY_SETTINGS = WM_USER + 0x0001;
 
-// List of circles
-std::list<Circle> circles;
-
-// list of shapes
-std::list<Shape*> shapes;
-
-// Circle that's being moved
-Shape* selected = nullptr;
-// original x and y values for the shape being moved
-int selectedX = -1, selectedY = -1;
-
-// File name
-string fileName = "shapes.txt";
-fstream shapeFile;
-
 // global instance of a circle
 Circle animatedCircle(100, 100, Shape::defaultWidth, false);
+
+// global instance of WinAPIShapes
+WinAPIShapes wnd;
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -69,6 +57,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
+    WinAPIShapes::staticConstructor();
 
     // Initialize GDI+
     ULONG_PTR m_gdiplusToken;
@@ -164,239 +153,231 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-// calculates distance between two points
-double distance(double x1, double y1, double x2, double y2) {
-    double dist = (y1 - y2) * (y1 - y2);
-    dist += (x1 - x2) * (x1 - x2);
-    dist = sqrt(dist);
-    return dist;
-}
+//void onPaint(HWND hWnd, WPARAM wParam, LPARAM lParam) {
+//
+//    PAINTSTRUCT ps;
+//    HDC hdc = BeginPaint(hWnd, &ps);
+//
+//    RECT rc;
+//    ::GetClientRect(hWnd, &rc); // puts a rectangle encapsulating the whole client area into the second parameter
+//    HDC memDc;
+//    auto hbuf = ::BeginBufferedPaint(hdc, &rc, BPBF_COMPATIBLEBITMAP, nullptr, &memDc);
+//
+//    Graphics graphics(memDc);
+//    graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
+//    graphics.Clear(Color::AliceBlue);
+//
+//    for (auto it = shapes.begin(); it != shapes.end(); it++) {
+//        (*it)->draw(graphics);
+//    }
+//    animatedCircle.draw(graphics); // TODO: is not drawn
+//
+//    ::EndBufferedPaint(hbuf, true);
+//    EndPaint(hWnd, &ps);
+//    ReleaseDC(hWnd, memDc); // check if this is correct, might not be
+//    ReleaseDC(hWnd, hdc);
+//}
 
-void onPaint(HWND hWnd, WPARAM wParam, LPARAM lParam) {
+//// moves a circle to a target location
+//void moveShape(HWND hWnd, LPARAM lParam) {
+//    int x, y;
+//    x = LOWORD(lParam);
+//    y = HIWORD(lParam);
+//
+//    // save old locations
+//    int old_x = selected->getX();
+//    int old_y = selected->getY();
+//
+//    selected->setPos(x, y);
+//
+//    // redraw the window
+//    RECT newArea{ x - (selected->getWidth() / 2) - 3, y - (selected->getWidth() / 2) - 3, x + (selected->getWidth() / 2) + 3, y + (selected->getWidth() / 2) + 3 }; // gets the attributes one by one
+//    RECT oldArea{ old_x - (selected->getWidth() / 2) - 50, old_y - (selected->getWidth() / 2) - 50, old_x + (selected->getWidth() / 2) + 50, old_y + (selected->getWidth() / 2) + 50 }; // TODO: one area
+//    // InvalidateRect(hWnd, &newArea, false); // only modifies a certain rectangle of the screen
+//    InvalidateRect(hWnd, &oldArea, false); // TODO: InvalidateRgn https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidatergn
+//}
 
-    PAINTSTRUCT ps;
-    HDC hdc = BeginPaint(hWnd, &ps);
+//// lets go of the selected circle and places it at the location of the lParam
+//void releaseShape(HWND hWnd, HWND lbhwnd, LPARAM lParam) {
+//    int x, y;
+//    x = LOWORD(lParam);
+//    y = HIWORD(lParam);
+//
+//    TCHAR buffer[128]{};
+//    StringCchPrintf(buffer, 128, TEXT("Circle wants to move from x = [%d], y = [%d] to x = [%d], y = [%d]"), selected->getX(), selected->getY(), x, y);
+//    SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
+//
+//    // check for overlapping
+//    bool overlap = false;
+//    for (auto it = shapes.begin(); it != shapes.end() && !overlap; it++) {
+//        overlap = (*it)->overlap(*selected);
+//    }
+//
+//    // if there's no overlap, place the shape
+//    if (!overlap) {
+//        selected->setPos(x, y);
+//        SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)TEXT("Circle moved successfully!"));
+//    }
+//
+//    // if there is overlap, return shape to original position
+//    else {
+//        selected->setPos(selectedX, selectedY);
+//        SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)TEXT("Circle overlapping with a preexisting circle! Not moved."));
+//
+//        // redraw area with circle
+//        RECT newArea{ selected->getX() - (selected->getWidth() / 2) - 3, selected->getY() - (selected->getWidth() / 2) - 3, selected->getX() + (selected->getWidth() / 2) + 3, selected->getY() + (selected->getWidth() / 2) + 3 };
+//        InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
+//    }
+//    // redraw area with circle
+//    RECT newArea{ x - (selected->getWidth() / 2) - 3, y - (selected->getWidth() / 2) - 3, x + (selected->getWidth() / 2) + 3, y + (selected->getWidth() / 2) + 3 };
+//    InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
+//
+//    selected = nullptr;
+//    selectedX = -1;
+//    selectedY = -1;
+//}
 
-    RECT rc;
-    ::GetClientRect(hWnd, &rc); // puts a rectangle encapsulating the whole client area into the second parameter
-    HDC memDc;
-    auto hbuf = ::BeginBufferedPaint(hdc, &rc, BPBF_COMPATIBLEBITMAP, nullptr, &memDc);
+//// resizes the circle based on the amount the user scrolls
+//void resizeShape(HWND hWnd, LPARAM lParam, WPARAM wParam) {
+//    int scrollQuant = HIWORD(wParam);
+//    int sizeChange;
+//
+//    if (scrollQuant == 120) // scroll away
+//        sizeChange = 4;
+//    else if (selected->getWidth() > 32)
+//        sizeChange = -4;
+//    else
+//        sizeChange = 0;
+//
+//    // get old width
+//    int oldWidth = selected->getWidth();
+//
+//    // change width
+//    selected->setWidth(selected->getWidth() + sizeChange);
+//
+//    int x, y;
+//    x = LOWORD(lParam);
+//    y = HIWORD(lParam);
+//
+//    // keeps x and y in the center
+//    x -= sizeChange / 2;
+//    y += sizeChange / 2;
+//    
+//    if (sizeChange > 0) {
+//        // redraw area with circle
+//        RECT newArea{ selected->getX() - (selected->getWidth() / 2) - 3, selected->getY() - (selected->getWidth() / 2) - 3, selected->getX() + (selected->getWidth() / 2) + 3, selected->getY() + (selected->getWidth() / 2) + 3 };
+//        InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
+//    }
+//    else {
+//        // redraw area with circle
+//        RECT newArea{ selected->getX() - (oldWidth / 2) - 3, selected->getY() - (oldWidth / 2) - 3, selected->getX() + (oldWidth / 2) + 3, selected->getY() + (oldWidth / 2) + 3 };
+//        InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
+//    }
+//}
 
-    Graphics graphics(memDc);
-    graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
-    graphics.Clear(Color::AliceBlue);
+//// saves all circles to a file
+//void saveFile() {
+//    // open a file
+//    shapeFile.open(fileName);
+//
+//    // edit the file
+//    if (shapeFile.is_open()) {
+//        shapeFile << Shape::shapeCnt() << endl;
+//        for (auto it = shapes.begin(); it != shapes.end(); it++) {
+//            (*it)->save(shapeFile);
+//        }
+//    }
+//
+//    // close the file
+//    shapeFile.close();
+//}
+//
+//// loads all circles from a file
+//void openFile() {
+//    shapeFile.open(fileName);
+//
+//    // read from the file
+//    if (shapeFile.is_open()) {
+//        int size;
+//        shapeFile >> size;
+//        shapeFile.ignore(1);
+//
+//        for (int i = 0; i < size; i++) {
+//            char iden = shapeFile.peek();
+//            Shape* s = shapeFactory(iden);
+//
+//            s->load(shapeFile);
+//            
+//            shapes.push_back(s);
+//        }
+//    }
+//
+//    shapeFile.close();
+//}
 
-    for (auto it = shapes.begin(); it != shapes.end(); it++) {
-        (*it)->draw(graphics);
-    }
-    animatedCircle.draw(graphics); // TODO: is not drawn
+//// checks if the location x, y is on a circle
+//bool isOnShape(int x, int y) {
+//    bool onShape = false;
+//    Shape* s = new Square(x, y, Shape::defaultWidth, false);
+//
+//    for (auto it = shapes.begin(); it != shapes.end() && !selected && !onShape; it++) {
+//        onShape = (*it)->overlap(*s);
+//
+//        if (onShape == true)
+//            selected = *it;
+//    }
+//
+//    delete s;
+//    return onShape;
+//}
 
-    ::EndBufferedPaint(hbuf, true);
-    EndPaint(hWnd, &ps);
-    ReleaseDC(hWnd, memDc); // check if this is correct, might not be
-    ReleaseDC(hWnd, hdc);
-}
+//// select a shape to move
+//void selectMovingShape(HWND lbhwnd) {
+//    selectedX = selected->getX();
+//    selectedY = selected->getY();
+//
+//    TCHAR buffer[128]{};
+//    StringCchPrintf(buffer, 128, TEXT("x = [%d], y = [%d] -- Clicked inside circle!"), selected->getX(), selected->getY());
+//    SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
+//}
 
-// moves a circle to a target location
-void moveShape(HWND hWnd, LPARAM lParam) {
-    int x, y;
-    x = LOWORD(lParam);
-    y = HIWORD(lParam);
-
-    // save old locations
-    int old_x = selected->getX();
-    int old_y = selected->getY();
-
-    selected->setPos(x, y);
-
-    // redraw the window
-    RECT newArea{ x - (selected->getWidth() / 2) - 3, y - (selected->getWidth() / 2) - 3, x + (selected->getWidth() / 2) + 3, y + (selected->getWidth() / 2) + 3 }; // gets the attributes one by one
-    RECT oldArea{ old_x - (selected->getWidth() / 2) - 50, old_y - (selected->getWidth() / 2) - 50, old_x + (selected->getWidth() / 2) + 50, old_y + (selected->getWidth() / 2) + 50 }; // TODO: one area
-    // InvalidateRect(hWnd, &newArea, false); // only modifies a certain rectangle of the screen
-    InvalidateRect(hWnd, &oldArea, false); // TODO: InvalidateRgn https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidatergn
-}
-
-// lets go of the selected circle and places it at the location of the lParam
-void releaseShape(HWND hWnd, HWND lbhwnd, LPARAM lParam) {
-    int x, y;
-    x = LOWORD(lParam);
-    y = HIWORD(lParam);
-
-    TCHAR buffer[128]{};
-    StringCchPrintf(buffer, 128, TEXT("Circle wants to move from x = [%d], y = [%d] to x = [%d], y = [%d]"), selected->getX(), selected->getY(), x, y);
-    SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
-
-    // check for overlapping
-    bool overlap = false;
-    for (auto it = shapes.begin(); it != shapes.end() && !overlap; it++) {
-        overlap = (*it)->overlap(*selected);
-    }
-
-    // if there's no overlap, place the shape
-    if (!overlap) {
-        selected->setPos(x, y);
-        SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)TEXT("Circle moved successfully!"));
-    }
-
-    // if there is overlap, return shape to original position
-    else {
-        selected->setPos(selectedX, selectedY);
-        SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)TEXT("Circle overlapping with a preexisting circle! Not moved."));
-
-        // redraw area with circle
-        RECT newArea{ selected->getX() - (selected->getWidth() / 2) - 3, selected->getY() - (selected->getWidth() / 2) - 3, selected->getX() + (selected->getWidth() / 2) + 3, selected->getY() + (selected->getWidth() / 2) + 3 };
-        InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
-    }
-    // redraw area with circle
-    RECT newArea{ x - (selected->getWidth() / 2) - 3, y - (selected->getWidth() / 2) - 3, x + (selected->getWidth() / 2) + 3, y + (selected->getWidth() / 2) + 3 };
-    InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
-
-    selected = nullptr;
-    selectedX = -1;
-    selectedY = -1;
-}
-
-// resizes the circle based on the amount the user scrolls
-void resizeShape(HWND hWnd, LPARAM lParam, WPARAM wParam) {
-    int scrollQuant = HIWORD(wParam);
-    int sizeChange;
-
-    if (scrollQuant == 120) // scroll away
-        sizeChange = 4;
-    else if (selected->getWidth() > 32)
-        sizeChange = -4;
-    else
-        sizeChange = 0;
-
-    // get old width
-    int oldWidth = selected->getWidth();
-
-    // change width
-    selected->setWidth(selected->getWidth() + sizeChange);
-
-    int x, y;
-    x = LOWORD(lParam);
-    y = HIWORD(lParam);
-
-    // keeps x and y in the center
-    x -= sizeChange / 2;
-    y += sizeChange / 2;
-    
-    if (sizeChange > 0) {
-        // redraw area with circle
-        RECT newArea{ selected->getX() - (selected->getWidth() / 2) - 3, selected->getY() - (selected->getWidth() / 2) - 3, selected->getX() + (selected->getWidth() / 2) + 3, selected->getY() + (selected->getWidth() / 2) + 3 };
-        InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
-    }
-    else {
-        // redraw area with circle
-        RECT newArea{ selected->getX() - (oldWidth / 2) - 3, selected->getY() - (oldWidth / 2) - 3, selected->getX() + (oldWidth / 2) + 3, selected->getY() + (oldWidth / 2) + 3 };
-        InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
-    }
-}
-
-// saves all circles to a file
-void saveFile() {
-    // open a file
-    shapeFile.open(fileName);
-
-    // edit the file
-    if (shapeFile.is_open()) {
-        shapeFile << Shape::shapeCnt() << endl;
-        for (auto it = shapes.begin(); it != shapes.end(); it++) {
-            (*it)->save(shapeFile);
-        }
-    }
-
-    // close the file
-    shapeFile.close();
-}
-
-// loads all circles from a file
-void openFile() {
-    shapeFile.open(fileName);
-
-    // read from the file
-    if (shapeFile.is_open()) {
-        int size;
-        shapeFile >> size;
-        shapeFile.ignore(1);
-
-        for (int i = 0; i < size; i++) {
-            char iden = shapeFile.peek();
-            Shape* s = shapeFactory(iden);
-
-            s->load(shapeFile);
-            
-            shapes.push_back(s);
-        }
-    }
-
-    shapeFile.close();
-}
-
-// checks if the location x, y is on a circle
-bool isOnShape(int x, int y) {
-    bool onShape = false;
-    Shape* s = new Square(x, y, Shape::defaultWidth, false);
-
-    for (auto it = shapes.begin(); it != shapes.end() && !selected && !onShape; it++) {
-        onShape = (*it)->overlap(*s);
-
-        if (onShape == true)
-            selected = *it;
-    }
-
-    delete s;
-    return onShape;
-}
-
-// select a shape to move
-void selectMovingShape(HWND lbhwnd) {
-    selectedX = selected->getX();
-    selectedY = selected->getY();
-
-    TCHAR buffer[128]{};
-    StringCchPrintf(buffer, 128, TEXT("x = [%d], y = [%d] -- Clicked inside circle!"), selected->getX(), selected->getY());
-    SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
-}
-
-// create a new circle at location x, y
-void createCircle(HWND hWnd, HWND lbhwnd, int x, int y) {
-    // create a circle
-    int width = Shape::defaultWidth;
-    Circle* c = new Circle(x, y);
-
-    // save the circle to the list of shapes
-    shapes.push_back(c);
-
-    // redraw the area in which you made the shape
-    RECT shapeArea{ x - (c->getWidth() / 2) - 3, y - (c->getWidth() / 2) - 3, x + (c->getWidth() / 2) + 3, y + (c->getWidth() / 2) + 3 }; // gets the attributes one by one
-    InvalidateRect(hWnd, &shapeArea, true); // only modifies a certain rectangle of the screen
-
-    // add a new element in the list (a new string)
-    TCHAR buffer[128]{};
-    StringCchPrintf(buffer, 128, TEXT("%d. x = [%d], y = [%d]  --  Added a new circle with ID [%d]!"), shapes.size(), c->getX(), c->getY(), c->getID());
-    SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
-}
-
-// create a new circle at location x, y
-void createSquare(HWND hWnd, HWND lbhwnd, int x, int y) {
-    // create a circle
-    int width = Shape::defaultWidth;
-    Square* s = new Square(x, y);
-
-    // save the circle to the list of shapes
-    shapes.push_back(s);
-
-    // redraw the area in which you made the shape
-    RECT shapeArea{ x - (s->getWidth() / 2) - 3, y - (s->getWidth() / 2) - 3, x + (s->getWidth() / 2) + 3, y + (s->getWidth() / 2) + 3 }; // gets the attributes one by one
-    InvalidateRect(hWnd, &shapeArea, true); // only modifies a certain rectangle of the screen
-
-    // add a new element in the list (a new string)
-    TCHAR buffer[128]{};
-    StringCchPrintf(buffer, 128, TEXT("%d. x = [%d], y = [%d]  --  Added a new square with ID [%d]!"), shapes.size(), s->getX(), s->getY(), s->getID());
-    SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
-}
+//// create a new circle at location x, y
+//void createCircle(HWND hWnd, HWND lbhwnd, int x, int y) {
+//    // create a circle
+//    int width = Shape::defaultWidth;
+//    Circle* c = new Circle(x, y);
+//
+//    // save the circle to the list of shapes
+//    shapes.push_back(c);
+//
+//    // redraw the area in which you made the shape
+//    RECT shapeArea{ x - (c->getWidth() / 2) - 3, y - (c->getWidth() / 2) - 3, x + (c->getWidth() / 2) + 3, y + (c->getWidth() / 2) + 3 }; // gets the attributes one by one
+//    InvalidateRect(hWnd, &shapeArea, true); // only modifies a certain rectangle of the screen
+//
+//    // add a new element in the list (a new string)
+//    TCHAR buffer[128]{};
+//    StringCchPrintf(buffer, 128, TEXT("%d. x = [%d], y = [%d]  --  Added a new circle with ID [%d]!"), shapes.size(), c->getX(), c->getY(), c->getID());
+//    SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
+//}
+//
+//// create a new circle at location x, y
+//void createSquare(HWND hWnd, HWND lbhwnd, int x, int y) {
+//    // create a circle
+//    int width = Shape::defaultWidth;
+//    Square* s = new Square(x, y);
+//
+//    // save the circle to the list of shapes
+//    shapes.push_back(s);
+//
+//    // redraw the area in which you made the shape
+//    RECT shapeArea{ x - (s->getWidth() / 2) - 3, y - (s->getWidth() / 2) - 3, x + (s->getWidth() / 2) + 3, y + (s->getWidth() / 2) + 3 }; // gets the attributes one by one
+//    InvalidateRect(hWnd, &shapeArea, true); // only modifies a certain rectangle of the screen
+//
+//    // add a new element in the list (a new string)
+//    TCHAR buffer[128]{};
+//    StringCchPrintf(buffer, 128, TEXT("%d. x = [%d], y = [%d]  --  Added a new square with ID [%d]!"), shapes.size(), s->getX(), s->getY(), s->getID());
+//    SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
+//}
 
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
@@ -412,46 +393,48 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static int cnt = 0;
     static HWND lbhwnd;
+
+    wnd.setWindow(hWnd);
+
     switch (message)
     {
-    case WM_CREATE:
-        {
-            RECT rect;
-            // GetWindowRect(); // includes title bar, menu bar, etc.
-            GetClientRect(hWnd, &rect);
+    //case WM_CREATE:
+    //    {
+    //        RECT rect;
+    //        // GetWindowRect(); // includes title bar, menu bar, etc.
+    //        GetClientRect(hWnd, &rect);
+    //        lbhwnd = CreateWindow(WC_LISTBOX, TEXT("Mouse Events"),
+    //            WS_VISIBLE | WS_CHILD | LBS_STANDARD | LBS_NOTIFY | LBS_HASSTRINGS,
+    //            10, rect.bottom - 10 - 100, rect.right - 20, 100,
+    //            hWnd, NULL, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 
-            // TODO: look in the documentation at this funtion
-            lbhwnd = CreateWindow(WC_LISTBOX, TEXT("Mouse Events"),
-                WS_VISIBLE | WS_CHILD | LBS_STANDARD | LBS_NOTIFY | LBS_HASSTRINGS,
-                10, rect.bottom - 10 - 100, rect.right - 20, 100,
-                hWnd, NULL, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 
-            // recreate the list of circles from the file
-            openFile();
+    //        // recreate the list of circles from the file
+    //        wnd.WndProc(message, wParam, lParam);
 
-            // set the timer
-            SetTimer(hWnd, 1, 20, nullptr);
-        }
-        break;
-    case WM_TIMER:
-    {
-        animatedCircle.setX(animatedCircle.getX() + 5);
-        // TODO: invalidate rect function
-        //RECT shapeArea{animatedCircle.getX() - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3, 
-        //    animatedCircle.getX() + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 };
-        //InvalidateRect(hWnd, &shapeArea, true); // only modifies a certain rectangle of the screen
-        RECT newArea{ animatedCircle.getX() - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3,
-            animatedCircle.getX() + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 }; // gets the attributes one by one
-        RECT oldArea{ animatedCircle.getX() - 5 - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3,
-            animatedCircle.getX() - 5 + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 };
-        InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
-        InvalidateRect(hWnd, &oldArea, true);
+    //        // set the timer
+    //        SetTimer(hWnd, 1, 20, nullptr);
+    //    }
+    //    break;
+    //case WM_TIMER:
+    //{
+    //    animatedCircle.setX(animatedCircle.getX() + 5);
+    //    // TODO: invalidate rect function
+    //    //RECT shapeArea{animatedCircle.getX() - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3, 
+    //    //    animatedCircle.getX() + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 };
+    //    //InvalidateRect(hWnd, &shapeArea, true); // only modifies a certain rectangle of the screen
+    //    RECT newArea{ animatedCircle.getX() - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3,
+    //        animatedCircle.getX() + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 }; // gets the attributes one by one
+    //    RECT oldArea{ animatedCircle.getX() - 5 - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3,
+    //        animatedCircle.getX() - 5 + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 };
+    //    InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
+    //    InvalidateRect(hWnd, &oldArea, true);
 
-        TCHAR buffer[128]{};
-        StringCchPrintf(buffer, 128, TEXT("One second has passed!"));
-        //SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
-        break;
-    }
+    //    TCHAR buffer[128]{};
+    //    StringCchPrintf(buffer, 128, TEXT("One second has passed!"));
+    //    //SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
+    //    break;
+    //}
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -480,59 +463,63 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         delete[] text;
         break;
     }
-    case WM_LBUTTONDOWN:
-        {
-            int x, y;
-            x = LOWORD(lParam);
-            y = HIWORD(lParam);
+    //case WM_LBUTTONDOWN:
+    //    {
+    //        int x, y;
+    //        x = LOWORD(lParam);
+    //        y = HIWORD(lParam);
 
-            // check if the mouse is on a circle
-            bool overlap = isOnShape(x, y);
-            if (selected) {
-                selectMovingShape(lbhwnd);
-            }
+    //        // check if the mouse is on a circle
+    //        bool overlap = isOnShape(x, y);
+    //        if (selected) {
+    //            selectMovingShape(lbhwnd);
+    //        }
 
-            // if control is being pressed, create a square instead
-            if (MK_CONTROL == (MK_CONTROL & wParam)) {
-                if (!overlap) {
-                    createSquare(hWnd, lbhwnd, x, y);
-                }
-            }
-            // otherwise create a circle
-            else {
-                if (!overlap) {
-                    createCircle(hWnd, lbhwnd, x, y);
-                }
-            }
-        }
-        break;
-    case WM_LBUTTONUP:
-        if (selected)
-            releaseShape(hWnd, lbhwnd, lParam);
-        break;
-    case WM_MOUSEMOVE:
-        if (selected)
-            moveShape(hWnd, lParam);
-        break;
-    case WM_MOUSEWHEEL:
-        if (selected)
-            resizeShape(hWnd, lParam, wParam);
-        break;
-    case WM_PAINT:
-        // TODO: look up double buffering (create a device context for a bitmap, and print it all at once to the screen)
-        // CreateCompatibleBitmap()
-        // CreateCompatibleDC()
-        // BitBLT()
+    //        // if control is being pressed, create a square instead
+    //        if (MK_CONTROL == (MK_CONTROL & wParam)) {
+    //            if (!overlap) {
+    //                createSquare(hWnd, lbhwnd, x, y);
+    //            }
+    //        }
+    //        // otherwise create a circle
+    //        else {
+    //            if (!overlap) {
+    //                createCircle(hWnd, lbhwnd, x, y);
+    //            }
+    //        }
+    //    }
+    //    break;
+    //case WM_LBUTTONUP:
+    //    if (selected)
+    //        releaseShape(hWnd, lbhwnd, lParam);
+    //    break;
+    //case WM_MOUSEMOVE:
+    //    if (selected)
+    //        moveShape(hWnd, lParam);
+    //    break;
+    //case WM_MOUSEWHEEL:
+    //    if (selected)
+    //        resizeShape(hWnd, lParam, wParam);
+    //    break;
+    //case WM_PAINT:
+    ////    // TODO: look up double buffering (create a device context for a bitmap, and print it all at once to the screen)
+    ////    // CreateCompatibleBitmap()
+    ////    // CreateCompatibleDC()
+    ////    // BitBLT()
 
-        onPaint(hWnd, lParam, wParam);
-        break;
-    case WM_DESTROY: // when the user closes the program
-        saveFile();
-        KillTimer(hWnd, 1);
-        PostQuitMessage(0);
-        break;
+    ////    wnd.WndProc(message, wParam, lParam);
+    //    onPaint(hWnd, lParam, wParam);
+    //    break;
+    //case WM_DESTROY: // when the user closes the program
+    //    wnd.WndProc(message, wParam, lParam);
+    //    KillTimer(hWnd, 1);
+    //    PostQuitMessage(0);
+    //    break;
     default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+    {
+        return wnd.WndProc(message, wParam, lParam);
+        //return DefWindowProc(hWnd, message, wParam, lParam);
+    }
     }
     return 0;
 }
@@ -586,7 +573,7 @@ INT_PTR CALLBACK SettingsWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
                 int width = _wtoi(widthBuffer);
                 Shape::defaultWidth = width;
             }
-            if (redBuffer[0] != '\0' && redBuffer[0] != '\0' && redBuffer[0] != '\0') {
+            if (redBuffer[0] != '\0' && greenBuffer[0] != '\0' && blueBuffer[0] != '\0') {
                 int red = _wtoi(redBuffer);
                 int green = _wtoi(greenBuffer);
                 int blue = _wtoi(blueBuffer);
@@ -618,17 +605,7 @@ INT_PTR CALLBACK SettingsWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 // TODO: add a border to selected shape
 // TODO: rework selection
 
-// TODO: get rid of flickering through InvalidateRect
 // TODO: delete circle when you click delete
 
-// TODO: modify the graphical interface to select colour and size of circles
-// TODO: make each circle size configurable through the scroll wheel (scroll wheel message)
-
-// TODO: add more information about each circle
-// TODO: add functions to the circle structure (draw, isOverlapping)
-// TODO: (!) split code into functions
 // TODO: circles move automatically
 // TODO: circles bounce on contact with borders
-// TODO: double buffering
-
-// TODO: GDI+

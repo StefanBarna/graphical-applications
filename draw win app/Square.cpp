@@ -24,7 +24,7 @@ void Square::draw(Gdiplus::Graphics& graphics) {
 }
 
 ostream& Square::save(ostream& os) {
-	os << "s" << " " << this->getX() << " " << this->getY() << " " << this->getWidth() << " " << this->getColour().GetRed() << " " << this->getColour().GetGreen() << " " << this->getColour().GetBlue() << endl;
+	os << "s" << " " << this->getX() << " " << this->getY() << " " << this->getWidth() << " " << (int)this->getColour().GetRed() << " " << (int)this->getColour().GetGreen() << " " << (int)this->getColour().GetBlue() << endl;
 	return os;
 }
 
