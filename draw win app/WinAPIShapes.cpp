@@ -4,7 +4,7 @@
 #include <strsafe.h>
 #include <list>
 #include <algorithm>
-
+#include "resource.h"
 #include "Shape.h"
 #include "Circle.h"
 #include "Utilities.h"
@@ -13,12 +13,25 @@
 using namespace Gdiplus;
 using namespace std;
 
-extern Circle animatedCircle;
-
 WinAPIShapes::MessageMap WinAPIShapes::ms_msgMap[100]{};
 size_t WinAPIShapes::ms_cnt{};
 
-WinAPIShapes::WinAPIShapes() {
+LRESULT CALLBACK WinAPIShapes::WndProcClass(HWND, UINT, WPARAM, LPARAM) { return 0; };
+
+HINSTANCE WinAPIShapes::ms_hInstance{};
+
+bool WinAPIShapes::ms_isRegistered = false;
+
+WinAPIShapes::WinAPIShapes()
+{
+    // if no the class is not registered  -> register everything
+    if (!WinAPIShapes::ms_isRegistered) {
+        WinAPIShapes::staticConstructor();
+        this->registerClass();
+        WinAPIShapes::ms_isRegistered = true;
+    }
+
+
     this->m_filename = "shapes.txt";
 }
 
@@ -67,7 +80,34 @@ LRESULT CALLBACK WinAPIShapes::WndProc(UINT message, WPARAM wParam, LPARAM lPara
 			break;
 		}
 	}
-    return  DefWindowProc(this->m_hWnd, message, wParam, lParam);
+    return DefWindowProc(this->m_hWnd, message, wParam, lParam);
+}
+
+//  FUNCTION: MyRegisterClass()
+//
+//  PURPOSE: Registers the window class.
+//
+ATOM WinAPIShapes::registerClass() const
+{
+    WNDCLASSEXW wcex;
+
+    wcex.cbSize = sizeof(WNDCLASSEX);
+
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WinAPIShapes::WndProcClass;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = WinAPIShapes::ms_hInstance;
+    wcex.hIcon = LoadIcon(WinAPIShapes::ms_hInstance, MAKEINTRESOURCE(IDI_DRAWWINAPP));
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_DRAWWINAPP);
+    wcex.lpszClassName = WinAPIShapes::ms_szWindowClass;
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+    auto res = RegisterClassExW(&wcex);
+
+    return res;
 }
 
 void WinAPIShapes::onPaint(WPARAM wParam, LPARAM lParam) {
@@ -87,7 +127,6 @@ void WinAPIShapes::onPaint(WPARAM wParam, LPARAM lParam) {
     for (auto it = this->m_shapes.begin(); it != this->m_shapes.end(); it++) {
         (*it)->draw(graphics);
     }
-    animatedCircle.draw(graphics);
 
     ::EndBufferedPaint(hbuf, true);
     EndPaint(this->m_hWnd, &ps);
@@ -322,4 +361,23 @@ RECT* WinAPIShapes::fusedRect(RECT r1, RECT r2) {
     fused->bottom = max(r1.bottom, r2.bottom);
 
     return fused;
+}
+
+
+BOOL WinAPIShapes::create(int nCmdShow)
+{
+    // hInst = hInstance; // Store instance handle in our global variable
+
+    this->m_hWnd = CreateWindowW(WinAPIShapes::ms_szWindowClass, L"A Nice title for shapes", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, WinAPIShapes::ms_hInstance, nullptr);
+
+    if (!this->m_hWnd)
+    {
+        return FALSE;
+    }
+
+    ShowWindow(this->m_hWnd, nCmdShow);
+    UpdateWindow(this->m_hWnd);
+
+    return TRUE;
 }

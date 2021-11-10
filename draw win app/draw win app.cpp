@@ -31,10 +31,10 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 const DWORD WM_APPLY_SETTINGS = WM_USER + 0x0001;
 
 // global instance of a circle
-Circle animatedCircle(100, 100, Shape::defaultWidth, false);
+//Circle animatedCircle(100, 100, Shape::defaultWidth, false);
 
 // global instance of WinAPIShapes
-WinAPIShapes wnd;
+//WinAPIShapes wnd;
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -57,7 +57,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
-    WinAPIShapes::staticConstructor();
+    //WinAPIShapes::staticConstructor();
+    WinAPIShapes::ms_hInstance = hInstance;
+
 
     // Initialize GDI+
     ULONG_PTR m_gdiplusToken;
@@ -69,9 +71,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_DRAWWINAPP, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
+    WinAPIShapes wnd;
 
     // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
+    //if (!wnd.create(nCmdShow))
+    if (!InitInstance(hInstance, nCmdShow))
     {
         return FALSE;
     }
@@ -97,8 +101,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     return (int) msg.wParam;
 }
 
-
-
 //
 //  FUNCTION: MyRegisterClass()
 //
@@ -110,17 +112,17 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
     wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DRAWWINAPP));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_DRAWWINAPP);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DRAWWINAPP));
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_DRAWWINAPP);
+    wcex.lpszClassName = szWindowClass;
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
     return RegisterClassExW(&wcex);
 }
@@ -394,7 +396,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static int cnt = 0;
     static HWND lbhwnd;
 
-    wnd.setWindow(hWnd);
+    //wnd.setWindow(hWnd);
 
     switch (message)
     {
@@ -517,7 +519,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     //    break;
     default:
     {
-        return wnd.WndProc(message, wParam, lParam);
+        //return wnd.WndProc(message, wParam, lParam);
         //return DefWindowProc(hWnd, message, wParam, lParam);
     }
     }
