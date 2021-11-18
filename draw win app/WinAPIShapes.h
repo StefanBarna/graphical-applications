@@ -3,12 +3,15 @@
 
 #include <Windows.h>
 #include <fstream>
+#include <list>
 
+#include "WinAPISettings.h"
 #include "Shape.h"
 
+// manages the main window
 class WinAPIShapes {
-	HWND m_hWnd;	// a handle to the current window (the identifier)
-	HWND m_lbhWnd;	// a handle to a list box on the current window
+	HWND m_hWnd{};		// a handle to the current window (the identifier)
+	HWND m_lbhWnd{};	// a handle to a list box on the current window
 
 	// Message Map
 	typedef void (WinAPIShapes::* MessageHandler)(WPARAM, LPARAM);
@@ -22,13 +25,26 @@ class WinAPIShapes {
 	static MessageMap ms_msgMap[100];
 	static size_t ms_cnt;
 
+	// register handle
+	static void hReg(UINT message, MessageHandler hMsg);
+
+	static WinAPIShapes* ms_pWnd[100];
+	static size_t ms_wndCnt;
+
+	static WinAPIShapes* findWindow(HWND);
+
 	// private variables
-	std::list<Shape*> m_shapes;		// list of shapes
-	std::string m_filename;			// save file name
-	std::fstream m_file;			// save file fstream
-	Shape* m_selected;
-	int m_selectedx, m_selectedy;
-	// selected shape information
+	std::list<Shape*> m_shapes{};		// list of shapes
+	std::string m_filename{};			// save file name
+	std::fstream m_file{};				// save file fstream
+	Shape* m_selected{};
+	int m_selectedx{}, m_selectedy{};	// location of selected object before being moved
+
+	static LRESULT CALLBACK WndProcClass(HWND, UINT, WPARAM, LPARAM);
+	static constexpr WCHAR ms_szWindowClass[100]{L"DRAWWINAPP"};		// the main window class name
+
+	// something cool
+	TCHAR m_windowTitle[100]{TEXT("Default Window Title")};
 
 protected:
 	// paint to screen
@@ -51,6 +67,9 @@ protected:
 
 	// when the mouse wheel is scrolled
 	void onMouseWheel(WPARAM wParam, LPARAM lParam);
+
+	// when a menu window is called
+	void onCommand(WPARAM wParam, LPARAM lParam);
 
 	// load file
 	void loadFile();
@@ -98,13 +117,22 @@ protected:
 	RECT* fusedRect(RECT r1, RECT r2);
 
 public:
+	void setWindowTitle(const TCHAR* title);
+
+	static bool ms_isRegistered;
+
+	static HINSTANCE ms_hInstance;
+
+	// saves instance handle and creates main window
+	BOOL create(int nCmdShow);
+
 	// sets the window handle
 	void setWindow(HWND hWnd) { if (this->m_hWnd == 0) this->m_hWnd = hWnd; } // a Bad Workaround (temporary)
 
 	// default constructor
 	WinAPIShapes();
 
-	// default constructor
+	// static constructor
 	static void staticConstructor();
 
 	// message handler

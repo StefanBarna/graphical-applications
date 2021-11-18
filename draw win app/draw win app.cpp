@@ -16,6 +16,7 @@
 #include "Circle.h"
 #include "Utilities.h"
 #include "WinAPIShapes.h"
+#include "WinAPISettings.h"
 
 using namespace Gdiplus;
 using namespace std;
@@ -38,13 +39,15 @@ WinAPIShapes wnd;
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
-WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
-WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+//WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
+//WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+
+//WinAPIShapes wnd;
 
 // Forward declarations of functions included in this code module:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+//ATOM                MyRegisterClass(HINSTANCE hInstance);
+//BOOL                InitInstance(HINSTANCE, int);
+//LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    SettingsWndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -66,13 +69,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ::BufferedPaintInit();
 
     // Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_DRAWWINAPP, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
+    //LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    //LoadStringW(hInstance, IDC_DRAWWINAPP, szWindowClass, MAX_LOADSTRING);
+    //MyRegisterClass(hInstance);
+
+    WinAPIShapes wnd;
+    wnd.setWindowTitle(TEXT("Shapes Application"));
 
     // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
-    {
+    //if (!wnd.create(nCmdShow))
+    // Attempt to attach an Instace of type WinAPIShapes to a window in OS
+    if (!wnd.create(nCmdShow)) {
         return FALSE;
     }
 
@@ -104,26 +111,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 //  PURPOSE: Registers the window class.
 //
-ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-    WNDCLASSEXW wcex;
-
-    wcex.cbSize = sizeof(WNDCLASSEX);
-
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DRAWWINAPP));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_DRAWWINAPP);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-    return RegisterClassExW(&wcex);
-}
+//ATOM MyRegisterClass(HINSTANCE hInstance)
+//{
+//    WNDCLASSEXW wcex;
+//
+//    wcex.cbSize = sizeof(WNDCLASSEX);
+//
+//    wcex.style = CS_HREDRAW | CS_VREDRAW;
+//    wcex.lpfnWndProc = WndProc;
+//    wcex.cbClsExtra = 0;
+//    wcex.cbWndExtra = 0;
+//    wcex.hInstance = hInstance;
+//    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DRAWWINAPP));
+//    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+//    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+//    wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_DRAWWINAPP);
+//    wcex.lpszClassName = szWindowClass;
+//    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+//
+//    return RegisterClassExW(&wcex);
+//}
 
 //
 //   FUNCTION: InitInstance(HINSTANCE, int)
@@ -135,23 +142,23 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //        In this function, we save the instance handle in a global variable and
 //        create and display the main program window.
 //
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-   hInst = hInstance; // Store instance handle in our global variable
-
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
-}
+//BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+//{
+//   hInst = hInstance; // Store instance handle in our global variable
+//
+//   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+//      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+//
+//   if (!hWnd)
+//   {
+//      return FALSE;
+//   }
+//
+//   ShowWindow(hWnd, nCmdShow);
+//   UpdateWindow(hWnd);
+//
+//   return TRUE;
+//}
 
 //void onPaint(HWND hWnd, WPARAM wParam, LPARAM lParam) {
 //
@@ -389,140 +396,146 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - post a quit message and return
 //
 //
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    static int cnt = 0;
-    static HWND lbhwnd;
-
-    wnd.setWindow(hWnd);
-
-    switch (message)
-    {
-    //case WM_CREATE:
-    //    {
-    //        RECT rect;
-    //        // GetWindowRect(); // includes title bar, menu bar, etc.
-    //        GetClientRect(hWnd, &rect);
-    //        lbhwnd = CreateWindow(WC_LISTBOX, TEXT("Mouse Events"),
-    //            WS_VISIBLE | WS_CHILD | LBS_STANDARD | LBS_NOTIFY | LBS_HASSTRINGS,
-    //            10, rect.bottom - 10 - 100, rect.right - 20, 100,
-    //            hWnd, NULL, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
-
-
-    //        // recreate the list of circles from the file
-    //        wnd.WndProc(message, wParam, lParam);
-
-    //        // set the timer
-    //        SetTimer(hWnd, 1, 20, nullptr);
-    //    }
-    //    break;
-    //case WM_TIMER:
-    //{
-    //    animatedCircle.setX(animatedCircle.getX() + 5);
-    //    // TODO: invalidate rect function
-    //    //RECT shapeArea{animatedCircle.getX() - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3, 
-    //    //    animatedCircle.getX() + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 };
-    //    //InvalidateRect(hWnd, &shapeArea, true); // only modifies a certain rectangle of the screen
-    //    RECT newArea{ animatedCircle.getX() - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3,
-    //        animatedCircle.getX() + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 }; // gets the attributes one by one
-    //    RECT oldArea{ animatedCircle.getX() - 5 - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3,
-    //        animatedCircle.getX() - 5 + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 };
-    //    InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
-    //    InvalidateRect(hWnd, &oldArea, true);
-
-    //    TCHAR buffer[128]{};
-    //    StringCchPrintf(buffer, 128, TEXT("One second has passed!"));
-    //    //SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
-    //    break;
-    //}
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case ID_EDIT_SETTINGS:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_SETTINGS), hWnd, SettingsWndProc);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_APPLY_SETTINGS: {
-        TCHAR* text = reinterpret_cast<TCHAR*>(wParam);
-        TCHAR buffer[128]{};
-        StringCchPrintf(buffer, 128, TEXT("Send the following greetings: %s"), text);
-        SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)text);
-        delete[] text;
-        break;
-    }
-    //case WM_LBUTTONDOWN:
-    //    {
-    //        int x, y;
-    //        x = LOWORD(lParam);
-    //        y = HIWORD(lParam);
-
-    //        // check if the mouse is on a circle
-    //        bool overlap = isOnShape(x, y);
-    //        if (selected) {
-    //            selectMovingShape(lbhwnd);
-    //        }
-
-    //        // if control is being pressed, create a square instead
-    //        if (MK_CONTROL == (MK_CONTROL & wParam)) {
-    //            if (!overlap) {
-    //                createSquare(hWnd, lbhwnd, x, y);
-    //            }
-    //        }
-    //        // otherwise create a circle
-    //        else {
-    //            if (!overlap) {
-    //                createCircle(hWnd, lbhwnd, x, y);
-    //            }
-    //        }
-    //    }
-    //    break;
-    //case WM_LBUTTONUP:
-    //    if (selected)
-    //        releaseShape(hWnd, lbhwnd, lParam);
-    //    break;
-    //case WM_MOUSEMOVE:
-    //    if (selected)
-    //        moveShape(hWnd, lParam);
-    //    break;
-    //case WM_MOUSEWHEEL:
-    //    if (selected)
-    //        resizeShape(hWnd, lParam, wParam);
-    //    break;
-    //case WM_PAINT:
-    ////    // TODO: look up double buffering (create a device context for a bitmap, and print it all at once to the screen)
-    ////    // CreateCompatibleBitmap()
-    ////    // CreateCompatibleDC()
-    ////    // BitBLT()
-
-    ////    wnd.WndProc(message, wParam, lParam);
-    //    onPaint(hWnd, lParam, wParam);
-    //    break;
-    //case WM_DESTROY: // when the user closes the program
-    //    wnd.WndProc(message, wParam, lParam);
-    //    KillTimer(hWnd, 1);
-    //    PostQuitMessage(0);
-    //    break;
-    default:
-    {
-        return wnd.WndProc(message, wParam, lParam);
-        //return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-    }
-    return 0;
-}
+//LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+//{
+//    static int cnt = 0;
+//    static HWND lbhwnd;
+//
+//    //wnd.setWindow(hWnd);
+//
+//    switch (message)
+//    {
+//    //case WM_CREATE:
+//    //    {
+//    //        RECT rect;
+//    //        // GetWindowRect(); // includes title bar, menu bar, etc.
+//    //        GetClientRect(hWnd, &rect);
+//    //        lbhwnd = CreateWindow(WC_LISTBOX, TEXT("Mouse Events"),
+//    //            WS_VISIBLE | WS_CHILD | LBS_STANDARD | LBS_NOTIFY | LBS_HASSTRINGS,
+//    //            10, rect.bottom - 10 - 100, rect.right - 20, 100,
+//    //            hWnd, NULL, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
+//
+//
+//    //        // recreate the list of circles from the file
+//    //        wnd.WndProc(message, wParam, lParam);
+//
+//    //        // set the timer
+//    //        SetTimer(hWnd, 1, 20, nullptr);
+//    //    }
+//    //    break;
+//    //case WM_TIMER:
+//    //{
+//    //    animatedCircle.setX(animatedCircle.getX() + 5);
+//    //    // TODO: invalidate rect function
+//    //    //RECT shapeArea{animatedCircle.getX() - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3, 
+//    //    //    animatedCircle.getX() + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 };
+//    //    //InvalidateRect(hWnd, &shapeArea, true); // only modifies a certain rectangle of the screen
+//    //    RECT newArea{ animatedCircle.getX() - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3,
+//    //        animatedCircle.getX() + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 }; // gets the attributes one by one
+//    //    RECT oldArea{ animatedCircle.getX() - 5 - (animatedCircle.getWidth() / 2) - 3, animatedCircle.getY() - (animatedCircle.getWidth() / 2) - 3,
+//    //        animatedCircle.getX() - 5 + (animatedCircle.getWidth() / 2) + 3, animatedCircle.getY() + (animatedCircle.getWidth() / 2) + 3 };
+//    //    InvalidateRect(hWnd, &newArea, true); // only modifies a certain rectangle of the screen
+//    //    InvalidateRect(hWnd, &oldArea, true);
+//
+//    //    TCHAR buffer[128]{};
+//    //    StringCchPrintf(buffer, 128, TEXT("One second has passed!"));
+//    //    //SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)buffer);
+//    //    break;
+//    //}
+//    case WM_COMMAND:
+//        {
+//            int wmId = LOWORD(wParam);
+//            // Parse the menu selections:
+//            switch (wmId)
+//            {
+//            case IDM_ABOUT:
+//                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+//                break;
+//            case ID_EDIT_SETTINGS:
+//                DialogBox(hInst, MAKEINTRESOURCE(IDD_SETTINGS), hWnd, SettingsWndProc);
+//                break;
+//            case IDM_EXIT:
+//                DestroyWindow(hWnd);
+//                break;
+//            default:
+//                return DefWindowProc(hWnd, message, wParam, lParam);
+//            }
+//        }
+//        break;
+//    case WM_APPLY_SETTINGS: {
+//        TCHAR* text = reinterpret_cast<TCHAR*>(wParam);
+//        TCHAR buffer[128]{};
+//        StringCchPrintf(buffer, 128, TEXT("Send the following greetings: %s"), text);
+//        SendMessage(lbhwnd, LB_INSERTSTRING, 0, (LPARAM)text);
+//        delete[] text;
+//        break;
+//    }
+//    case WM_GETMINMAXINFO: {
+//        LPMINMAXINFO pMMI = (LPMINMAXINFO)lParam;
+//        pMMI->ptMaxTrackSize.x = 300;
+//        pMMI->ptMaxTrackSize.y = 300;
+//        break;
+//    }
+//    //case WM_LBUTTONDOWN:
+//    //    {
+//    //        int x, y;
+//    //        x = LOWORD(lParam);
+//    //        y = HIWORD(lParam);
+//
+//    //        // check if the mouse is on a circle
+//    //        bool overlap = isOnShape(x, y);
+//    //        if (selected) {
+//    //            selectMovingShape(lbhwnd);
+//    //        }
+//
+//    //        // if control is being pressed, create a square instead
+//    //        if (MK_CONTROL == (MK_CONTROL & wParam)) {
+//    //            if (!overlap) {
+//    //                createSquare(hWnd, lbhwnd, x, y);
+//    //            }
+//    //        }
+//    //        // otherwise create a circle
+//    //        else {
+//    //            if (!overlap) {
+//    //                createCircle(hWnd, lbhwnd, x, y);
+//    //            }
+//    //        }
+//    //    }
+//    //    break;
+//    //case WM_LBUTTONUP:
+//    //    if (selected)
+//    //        releaseShape(hWnd, lbhwnd, lParam);
+//    //    break;
+//    //case WM_MOUSEMOVE:
+//    //    if (selected)
+//    //        moveShape(hWnd, lParam);
+//    //    break;
+//    //case WM_MOUSEWHEEL:
+//    //    if (selected)
+//    //        resizeShape(hWnd, lParam, wParam);
+//    //    break;
+//    //case WM_PAINT:
+//    ////    // TODO: look up double buffering (create a device context for a bitmap, and print it all at once to the screen)
+//    ////    // CreateCompatibleBitmap()
+//    ////    // CreateCompatibleDC()
+//    ////    // BitBLT()
+//
+//    ////    wnd.WndProc(message, wParam, lParam);
+//    //    onPaint(hWnd, lParam, wParam);
+//    //    break;
+//    //case WM_DESTROY: // when the user closes the program
+//    //    wnd.WndProc(message, wParam, lParam);
+//    //    KillTimer(hWnd, 1);
+//    //    PostQuitMessage(0);
+//    //    break;
+//    default:
+//    {
+//        //return wnd.WndProc(message, wParam, lParam);
+//        //return DefWindowProc(hWnd, message, wParam, lParam);
+//    }
+//    }
+//    return 0;
+//}
 
 // Message handler for about box.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -545,62 +558,61 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 // Message handler for settings box
-INT_PTR CALLBACK SettingsWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message) {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        switch (LOWORD(wParam)) {
-        case IDOK:
-            //::MessageBox(hDlg, TEXT("Saving the settings..."), TEXT("Saved"), MB_OK);
-            auto parentWnd = ::GetParent(hDlg);
-
-            // receive information from text areas
-            TCHAR* widthBuffer = new TCHAR[128]{};
-            TCHAR* redBuffer = new TCHAR[128]{};
-            TCHAR* greenBuffer = new TCHAR[128]{};
-            TCHAR* blueBuffer = new TCHAR[128]{};
-            ::GetDlgItemText(hDlg, IDC_WIDTH_INPUT, widthBuffer, 128);
-            ::GetDlgItemText(hDlg, IDC_RED_INPUT, redBuffer, 128);
-            ::GetDlgItemText(hDlg, IDC_GREEN_INPUT, greenBuffer, 128);
-            ::GetDlgItemText(hDlg, IDC_BLUE_INPUT, blueBuffer, 128);
-            // TODO: use SetDlgItemText() to include the already existing values
-
-            // convert it to readable information
-            if (widthBuffer[0] != '\0') {
-                int width = _wtoi(widthBuffer);
-                Shape::defaultWidth = width;
-            }
-            if (redBuffer[0] != '\0' && greenBuffer[0] != '\0' && blueBuffer[0] != '\0') {
-                int red = _wtoi(redBuffer);
-                int green = _wtoi(greenBuffer);
-                int blue = _wtoi(blueBuffer);
-                Shape::defaultBorderColour = Color(red, green, blue);
-            }
-
-            // delete tchar strings
-            delete[] widthBuffer;
-            delete[] redBuffer;
-            delete[] greenBuffer;
-            delete[] blueBuffer;
-
-            //::MessageBox(hDlg, buffer, TEXT("Input"), MB_OK);
-            //::PostMessage(parentWnd, WM_APPLY_SETTINGS, reinterpret_cast<WPARAM>(idBuffer), NULL);
-            break;
-        }
-
-        if (LOWORD(wParam) == IDOK or LOWORD(wParam) == IDCANCEL)
-        {
-            ::EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-
-        break;
-    }
-    return (INT_PTR)FALSE;
-}
+//INT_PTR CALLBACK SettingsWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
+//    UNREFERENCED_PARAMETER(lParam);
+//    switch (message) {
+//    case WM_INITDIALOG:
+//        return (INT_PTR)TRUE;
+//
+//    case WM_COMMAND:
+//        switch (LOWORD(wParam)) {
+//        case IDOK:
+//            //::MessageBox(hDlg, TEXT("Saving the settings..."), TEXT("Saved"), MB_OK);
+//            auto parentWnd = ::GetParent(hDlg);
+//
+//            // receive information from text areas
+//            TCHAR* widthBuffer = new TCHAR[128]{};
+//            TCHAR* redBuffer = new TCHAR[128]{};
+//            TCHAR* greenBuffer = new TCHAR[128]{};
+//            TCHAR* blueBuffer = new TCHAR[128]{};
+//            ::GetDlgItemText(hDlg, IDC_WIDTH_INPUT, widthBuffer, 128);
+//            ::GetDlgItemText(hDlg, IDC_RED_INPUT, redBuffer, 128);
+//            ::GetDlgItemText(hDlg, IDC_GREEN_INPUT, greenBuffer, 128);
+//            ::GetDlgItemText(hDlg, IDC_BLUE_INPUT, blueBuffer, 128);
+//
+//            // convert it to readable information
+//            if (widthBuffer[0] != '\0') {
+//                int width = _wtoi(widthBuffer);
+//                Shape::defaultWidth = width;
+//            }
+//            if (redBuffer[0] != '\0' && greenBuffer[0] != '\0' && blueBuffer[0] != '\0') {
+//                int red = _wtoi(redBuffer);
+//                int green = _wtoi(greenBuffer);
+//                int blue = _wtoi(blueBuffer);
+//                Shape::defaultBorderColour = Color(red, green, blue);
+//            }
+//
+//            // delete tchar strings
+//            delete[] widthBuffer;
+//            delete[] redBuffer;
+//            delete[] greenBuffer;
+//            delete[] blueBuffer;
+//
+//            //::MessageBox(hDlg, buffer, TEXT("Input"), MB_OK);
+//            //::PostMessage(parentWnd, WM_APPLY_SETTINGS, reinterpret_cast<WPARAM>(idBuffer), NULL);
+//            break;
+//        }
+//
+//        if (LOWORD(wParam) == IDOK or LOWORD(wParam) == IDCANCEL)
+//        {
+//            ::EndDialog(hDlg, LOWORD(wParam));
+//            return (INT_PTR)TRUE;
+//        }
+//
+//        break;
+//    }
+//    return (INT_PTR)FALSE;
+//}
 
 // TODO: add a border to selected shape
 // TODO: rework selection

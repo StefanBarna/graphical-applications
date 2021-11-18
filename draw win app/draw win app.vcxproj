@@ -147,6 +147,7 @@
     <ClInclude Include="Square.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Utilities.h" />
+    <ClInclude Include="WinAPISettings.h" />
     <ClInclude Include="WinAPIShapes.h" />
   </ItemGroup>
   <ItemGroup>
@@ -155,6 +156,7 @@
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="Square.cpp" />
     <ClCompile Include="Utilities.cpp" />
+    <ClCompile Include="WinAPISettings.cpp" />
     <ClCompile Include="WinAPIShapes.cpp" />
   </ItemGroup>
   <ItemGroup>

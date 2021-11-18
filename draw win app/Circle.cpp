@@ -15,8 +15,7 @@ Circle::Circle(int x, int y, int radius, bool save) : Shape(x, y, radius*2, save
 };
 
 void Circle::draw(Graphics& graphics) {
-	this->m_radius = this->getWidth() / 2; // TODO: this was a quick fix, fix the code elsewhere
-
+	this->m_radius = this->getWidth() / 2;
 	// pen info
 	Color penColor = this->getColour();
 	double penWidth = 3.0;

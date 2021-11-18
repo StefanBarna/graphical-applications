@@ -42,6 +42,9 @@
     <ClInclude Include="WinAPIShapes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WinAPISettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="draw win app.cpp">
@@ -60,6 +63,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WinAPIShapes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WinAPISettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

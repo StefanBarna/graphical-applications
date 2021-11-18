@@ -4,11 +4,13 @@
 #include <strsafe.h>
 #include <list>
 #include <algorithm>
-
+#include <sstream>
+#include "resource.h"
 #include "Shape.h"
 #include "Circle.h"
 #include "Utilities.h"
 #include "WinAPIShapes.h"
+#include "WinAPISettings.h"
 
 using namespace Gdiplus;
 using namespace std;
@@ -18,44 +20,102 @@ extern Circle animatedCircle;
 WinAPIShapes::MessageMap WinAPIShapes::ms_msgMap[100]{};
 size_t WinAPIShapes::ms_cnt{};
 
-WinAPIShapes::WinAPIShapes() {
+WinAPIShapes* WinAPIShapes::ms_pWnd[100]{};
+size_t WinAPIShapes::ms_wndCnt{};
+
+WinAPIShapes* WinAPIShapes::findWindow(HWND hWnd) {
+    for (size_t i = 0; i < WinAPIShapes::ms_wndCnt; ++i) {
+        if (WinAPIShapes::ms_pWnd[i]->m_hWnd == hWnd)
+            return WinAPIShapes::ms_pWnd[i];
+    }
+    return nullptr;
+}
+
+LRESULT CALLBACK WinAPIShapes::WndProcClass(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    static std::stringstream ss;
+    ss << hex << message << "\n";
+    // find the window
+    WinAPIShapes* wnd = WinAPIShapes::findWindow(hWnd);
+
+    if (wnd == nullptr)
+    {
+        //if (message == WM_GETMINMAXINFO)
+        //{
+        //    ss << hex << message << "\n";
+        //}
+        //if (message == WM_NCCREATE)
+        //{
+        //    ss << hex << message << "\n";
+        //}
+        //if (message == WM_NCDESTROY)
+        //{
+        //    ss << hex << message << "\n";
+        //}
+        //if (message == WM_NCCALCSIZE)
+        //{
+        //    ss << hex << message << "\n";
+        //}
+        if (message == WM_CREATE)
+        {
+            ss << hex << message << "\n";
+            CREATESTRUCT* lCreate = (CREATESTRUCT*)lParam;
+            wnd = (WinAPIShapes*)lCreate->lpCreateParams;
+            wnd->m_hWnd = hWnd;
+        }
+    }
+
+    if (wnd != nullptr)
+        return wnd->WndProc(message, wParam, lParam);
+
+    return DefWindowProc(hWnd, message, wParam, lParam);
+};
+
+HINSTANCE WinAPIShapes::ms_hInstance{};
+
+bool WinAPIShapes::ms_isRegistered = false;
+
+WinAPIShapes::WinAPIShapes()
+{
+    // if no the class is not registered  -> register everything
+    if (!WinAPIShapes::ms_isRegistered) {
+        WinAPIShapes::staticConstructor();
+        this->registerClass();
+        WinAPIShapes::ms_isRegistered = true;
+    }
+
+
     this->m_filename = "shapes.txt";
 }
 
 void WinAPIShapes::staticConstructor() {
 	// onPaint
-    WinAPIShapes::ms_msgMap[0].msg = WM_PAINT;
-	WinAPIShapes::ms_msgMap[0].pfnHandler = &WinAPIShapes::onPaint;
-	WinAPIShapes::ms_cnt++;
+    WinAPIShapes::hReg(WM_PAINT, &WinAPIShapes::onPaint);
 
     // onCreate
-    WinAPIShapes::ms_msgMap[1].msg = WM_CREATE;
-    WinAPIShapes::ms_msgMap[1].pfnHandler = &WinAPIShapes::onCreate;
-    WinAPIShapes::ms_cnt++;
+    WinAPIShapes::hReg(WM_CREATE, &WinAPIShapes::onCreate);
 
     // onDestroy
-    WinAPIShapes::ms_msgMap[2].msg = WM_DESTROY;
-    WinAPIShapes::ms_msgMap[2].pfnHandler = &WinAPIShapes::onDestroy;
-    WinAPIShapes::ms_cnt++;
+    WinAPIShapes::hReg(WM_DESTROY, &WinAPIShapes::onDestroy);
 
     // onLButtonDown
-    WinAPIShapes::ms_msgMap[3].msg = WM_LBUTTONDOWN;
-    WinAPIShapes::ms_msgMap[3].pfnHandler = &WinAPIShapes::onLButtonDown;
-    WinAPIShapes::ms_cnt++;
+    WinAPIShapes::hReg(WM_LBUTTONDOWN, &WinAPIShapes::onLButtonDown);
 
     // onLButtonUp
-    WinAPIShapes::ms_msgMap[4].msg = WM_LBUTTONUP;
-    WinAPIShapes::ms_msgMap[4].pfnHandler = &WinAPIShapes::onLButtonUp;
-    WinAPIShapes::ms_cnt++;
+    WinAPIShapes::hReg(WM_LBUTTONUP, &WinAPIShapes::onLButtonUp);
 
     // onMouseMove
-    WinAPIShapes::ms_msgMap[5].msg = WM_MOUSEMOVE;
-    WinAPIShapes::ms_msgMap[5].pfnHandler = &WinAPIShapes::onMouseMove;
-    WinAPIShapes::ms_cnt++;
+    WinAPIShapes::hReg(WM_MOUSEMOVE, &WinAPIShapes::onMouseMove);
 
     // onMouseWheel
-    WinAPIShapes::ms_msgMap[6].msg = WM_MOUSEWHEEL;
-    WinAPIShapes::ms_msgMap[6].pfnHandler = &WinAPIShapes::onMouseWheel;
+    WinAPIShapes::hReg(WM_MOUSEWHEEL, &WinAPIShapes::onMouseWheel);
+
+    // onCommand
+    WinAPIShapes::hReg(WM_COMMAND, &WinAPIShapes::onCommand);
+}
+
+void WinAPIShapes::hReg(UINT message, MessageHandler hMsg) {
+    WinAPIShapes::ms_msgMap[WinAPIShapes::ms_cnt].msg = message;
+    WinAPIShapes::ms_msgMap[WinAPIShapes::ms_cnt].pfnHandler = hMsg;
     WinAPIShapes::ms_cnt++;
 }
 
@@ -149,6 +209,28 @@ void WinAPIShapes::onMouseMove(WPARAM wParam, LPARAM lParam) {
 void WinAPIShapes::onMouseWheel(WPARAM wParam, LPARAM lParam) {
     if (this->m_selected)
         this->resizeShape(lParam, wParam);
+}
+
+void WinAPIShapes::onCommand(WPARAM wParam, LPARAM lParam) {
+    int wmId = LOWORD(wParam);
+    // Parse the menu selections:
+    switch (wmId)
+    {
+        /*case IDM_ABOUT:
+            DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+            break;*/
+    case ID_EDIT_SETTINGS:
+    {
+        WinAPISettings::staticConstructor();
+        WinAPISettings wndSetting;
+        wndSetting.create(this->m_hWnd);
+        // grab the data from object
+        break;
+    }
+    case IDM_EXIT:
+        DestroyWindow(this->m_hWnd);
+        break;
+    }
 }
 
 void WinAPIShapes::loadFile() {
@@ -322,4 +404,38 @@ RECT* WinAPIShapes::fusedRect(RECT r1, RECT r2) {
     fused->bottom = max(r1.bottom, r2.bottom);
 
     return fused;
+}
+
+void WinAPIShapes::setWindowTitle(const TCHAR* title) {
+    StringCchPrintf(this->m_windowTitle, sizeof(this->m_windowTitle)/sizeof(this->m_windowTitle[0]), title);
+}
+
+BOOL WinAPIShapes::create(int nCmdShow)
+{
+    //this->m_hInst = hInstance; // Store instance handle in our global variable
+
+    WinAPIShapes::ms_pWnd[WinAPIShapes::ms_wndCnt] = this;
+    ++WinAPIShapes::ms_wndCnt;
+
+    this->m_hWnd = CreateWindowEx(
+                                    0,                                                                      /* extended styles */
+                                    WinAPIShapes::ms_szWindowClass,                                         /*  which windows to create -- must be registered before*/
+                                    this->m_windowTitle,                                                    /* text that appear in the title bar of the window */
+                                    WS_OVERLAPPEDWINDOW,                                                    /* styles used to create */
+                                    CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,                                     /* position on screen */
+                                    nullptr,                                                                /* the parent of this window */
+                                    nullptr,                                                                /* handle to the menu */
+                                    WinAPIShapes::ms_hInstance,                                             /* handle of the module */
+                                    this                                                                    /* LPARAM, passed to WM_CREATE */
+                                );
+
+    if (!this->m_hWnd)
+    {
+        return FALSE;
+    }
+
+    ShowWindow(this->m_hWnd, nCmdShow);
+    UpdateWindow(this->m_hWnd);
+
+    return TRUE;
 }
