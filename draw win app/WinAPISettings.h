@@ -39,6 +39,9 @@ protected:
 	// when the 'ok' button is clicked
 	void onOk(WPARAM wParam, LPARAM lParam);
 
+	// then the 'colour' button is clicked
+	void onColour(WPARAM wParam, LPARAM lParam);
+
 public:
 	// default constructor
 	WinAPISettings();

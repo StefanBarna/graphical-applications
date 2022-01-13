@@ -17,13 +17,13 @@ public:
 	/// <param name="y">y position</param>
 	/// <param name="width">width of square</param>
 	/// <param name="save">false if the square is temporary, true otherwise</param>
-	Square(int x, int y, int width = 50, bool save = true);
+	Square(int x, int y, int width = Shape::defaultWidth, int xvel = 1, int yvel = 1);
 
 	/// <summary>
 	/// draws the shape to a window
 	/// </summary>
 	/// <param name="graphics">the graphics being drawn to</param>
-	void draw(Gdiplus::Graphics& graphics) override;
+	void draw(Gdiplus::Graphics& graphics, bool drawID = true) override;
 
 	/// <summary>
 	/// saves the information of a shape to an ostream

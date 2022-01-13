@@ -1,10 +1,18 @@
 #include <Windows.h>
 #include <gdiplus.h>
+#include <Commctrl.h>
 
 #include "WinAPISettings.h"
 #include "WinAPIShapes.h"
 #include "Shape.h"
 #include "resource.h"
+
+// TODO for next class
+// - find out more about the shader files
+// - open/save file dialog
+// - animation in DirectX
+// - custom 
+// - DirectX antialiasing
 
 WinAPISettings::MessageMap WinAPISettings::ms_msgMap[100]{};
 size_t WinAPISettings::ms_cnt{};
@@ -76,16 +84,25 @@ INT_PTR WinAPISettings::onInitDialog(WPARAM wParam, LPARAM lParam) {
     ::SetDlgItemText(this->m_hDlg, IDC_GREEN_INPUT, buffer);
     wsprintfW(buffer, L"%d", (int)(Shape::defaultBorderColour.GetBlue()));
     ::SetDlgItemText(this->m_hDlg, IDC_BLUE_INPUT, buffer);
+
+
+    SendMessage(this->m_hDlg, TBM_SETRANGE, (WPARAM)FALSE, MAKELPARAM(0, 20));
     return (INT_PTR)TRUE;
 }
 
 INT_PTR WinAPISettings::onCommand(WPARAM wParam, LPARAM lParam) {
-	if (LOWORD(wParam) == IDOK)
-		this->onOk(wParam, lParam);
-	if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL) {
-		::EndDialog(this->m_hDlg, LOWORD(wParam));
-		return (INT_PTR)TRUE;
-	}
+    switch (LOWORD(wParam)) {
+    case IDOK: {
+        this->onOk(wParam, lParam);
+    }
+    case IDCANCEL: {
+        ::EndDialog(this->m_hDlg, LOWORD(wParam));
+        return (INT_PTR)TRUE;
+    } break;
+    case IDC_COLOURCHOOSE: {
+        this->onColour(wParam, lParam);
+    } break;
+    }
     return (INT_PTR)FALSE;
 }
 
@@ -94,32 +111,34 @@ void WinAPISettings::onOk(WPARAM wParam, LPARAM lParam) {
 
     // receive information from text areas
     TCHAR* widthBuffer = new TCHAR[128]{};
-    TCHAR* redBuffer = new TCHAR[128]{};
-    TCHAR* greenBuffer = new TCHAR[128]{};
-    TCHAR* blueBuffer = new TCHAR[128]{};
     ::GetDlgItemText(this->m_hDlg, IDC_WIDTH_INPUT, widthBuffer, 128);
-    ::GetDlgItemText(this->m_hDlg, IDC_RED_INPUT, redBuffer, 128);
-    ::GetDlgItemText(this->m_hDlg, IDC_GREEN_INPUT, greenBuffer, 128);
-    ::GetDlgItemText(this->m_hDlg, IDC_BLUE_INPUT, blueBuffer, 128);
-    // TODO: use SetDlgItemText() to include the already existing values
 
     // convert it to readable information
     if (widthBuffer[0] != '\0') {
         int width = _wtoi(widthBuffer);
         Shape::defaultWidth = width;
     }
-    if (redBuffer[0] != '\0' && greenBuffer[0] != '\0' && blueBuffer[0] != '\0') {
-        int red = _wtoi(redBuffer);
-        int green = _wtoi(greenBuffer);
-        int blue = _wtoi(blueBuffer);
-        Shape::defaultBorderColour = Gdiplus::Color(red, green, blue);
-    }
 
     // delete tchar strings
     delete[] widthBuffer;
-    delete[] redBuffer;
-    delete[] greenBuffer;
-    delete[] blueBuffer;
+}
+
+void WinAPISettings::onColour(WPARAM wParam, LPARAM lParam) {
+    CHOOSECOLOR cc;                 // common dialog box structure
+    static COLORREF acrCustClr[16]; // array of custom color
+
+    // initialize CHOOSECOLOR
+    ZeroMemory(&cc, sizeof(cc));
+    cc.lStructSize = sizeof(cc);
+    cc.hwndOwner = this->m_hDlg;
+    cc.lpCustColors = (LPDWORD)acrCustClr;
+    cc.rgbResult = (DWORD)RGB(Shape::defaultBorderColour.GetRed(), Shape::defaultBorderColour.GetGreen(), Shape::defaultBorderColour.GetBlue());
+    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+    if (ChooseColor(&cc) == TRUE) {
+        Shape::defaultBorderColour.SetFromCOLORREF(cc.rgbResult);
+        // GetRValue(cc.rgbResult), GetGValue(cc.rgbResult), GetBValue(cc.rgbResult)
+    }
 }
 
 BOOL WinAPISettings::create(HWND parent) {

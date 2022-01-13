@@ -10,11 +10,11 @@ Circle::Circle() : Shape() {
 	this->m_radius = 0;
 };
 
-Circle::Circle(int x, int y, int radius, bool save) : Shape(x, y, radius*2, save) {
-	this->m_radius = radius;
+Circle::Circle(int x, int y, int diameter, int xvel, int yvel) : Shape(x, y, diameter, xvel, yvel) {
+	this->m_radius = diameter / 2;
 };
 
-void Circle::draw(Graphics& graphics) {
+void Circle::draw(Graphics& graphics, bool drawID) {
 	this->m_radius = this->getWidth() / 2;
 	// pen info
 	Color penColor = this->getColour();
@@ -24,8 +24,19 @@ void Circle::draw(Graphics& graphics) {
 	// draw circle
 	graphics.DrawEllipse(&pen, this->getX() - this->m_radius, this->getY() - this->m_radius, this->m_radius * 2, this->m_radius * 2);
 
+	// draw the selected border if the shape is selected
+	if (this->getSelected()) {
+		Color c = Color::LightGray;
+		float w = 3.0;
+		Pen p(c, w);
+
+		RectF border(this->getX() - (this->getWidth() / 2) - 3, this->getY() - (this->getWidth() / 2) - 3, this->getWidth() + 6, this->getWidth() + 6);
+		graphics.DrawRectangle(&p, border);
+	}
+
 	// call drawID
-	this->drawID(graphics);
+	if (drawID)
+		this->drawID(graphics);
 }
 
 ostream& Circle::save(ostream& os) {

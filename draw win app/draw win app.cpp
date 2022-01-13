@@ -1,5 +1,27 @@
 // draw win app.cpp : Defines the entry point for the application.
 
+// TODO: selection
+// TODO: fix shape interactions
+// TODO: vectors
+// TODO: client area : WM_NCCALCSIZE
+// TODO: heirarchy for window classes
+// TODO: resize window : look into anchoring
+
+// TODO: start and stop buttons for the animation
+// TODO: RESEARCH how to modify the client area to make room for other visual element
+
+// TODO: file save, save as, and load in the file menu
+//       open and save as dialog boxes
+// https://docs.microsoft.com/en-us/windows/win32/dlgbox/open-and-save-as-dialog-boxes
+// - &Save
+// - Save &As ...
+// - &Open ...
+// TODO: fill / gradient shapes
+//
+// OutputDebugString
+
+// TODO: speed control via a slider
+
 #include <list>
 #include <Windows.h>
 #include <CommCtrl.h>
@@ -32,7 +54,7 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 const DWORD WM_APPLY_SETTINGS = WM_USER + 0x0001;
 
 // global instance of a circle
-Circle animatedCircle(100, 100, Shape::defaultWidth, false);
+//Circle animatedCircle(100, 100, Shape::defaultWidth, false);
 
 // global instance of WinAPIShapes
 WinAPIShapes wnd;
@@ -103,8 +125,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     return (int) msg.wParam;
 }
-
-
 
 //
 //  FUNCTION: MyRegisterClass()

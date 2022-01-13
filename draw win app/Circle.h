@@ -22,7 +22,7 @@ public:
 	/// <param name="y">y position</param>
 	/// <param name="radius">radius of circle</param>
 	/// <param name="save">false if the square is temporary, true otherwise</param>
-	Circle(int x, int y, int radius = Shape::defaultWidth, bool save = true);
+	Circle(int x, int y, int diameter = Shape::defaultWidth, int xvel = 1, int yvel = 1);
 
 	// override expresses an interest in using a virtual function from a parent class
 	// it will show the function as an error if there isn't a function with the same prototype
@@ -31,7 +31,7 @@ public:
 	/// draws the shape to a window
 	/// </summary>
 	/// <param name="graphics">the graphics being drawn to</param>
-	void draw(Gdiplus::Graphics& graphics) override;
+	void draw(Gdiplus::Graphics& graphics, bool drawID = true) override;
 
 	/// <summary>
 	/// saves the information of a shape to an ostream

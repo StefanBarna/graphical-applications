@@ -2,36 +2,45 @@
 #include "Shape.h"
 using namespace Gdiplus;
 
-int Shape::m_cnt = 0;
-int Shape::defaultWidth = 25;
+int Shape::ms_cnt = 0;
+int Shape::defaultWidth = 50;
 Color Shape::defaultBorderColour = Color(0, 0, 0);
 
 Shape::Shape() {
-	this->m_cnt++;
-	this->m_id = this->m_cnt;
+	Shape::ms_cnt++;
+	this->m_id = Shape::ms_cnt;
 	this->m_x = 0;
 	this->m_y = 0;
 	this->m_width = this->defaultWidth;
 	this->m_colour = this->defaultBorderColour;
+	this->m_xvel = 1;
+	this->m_yvel = 1;
+	this->m_isSelected = false;
 }
 
-Shape::Shape(int x, int y, int width, bool save) {
-	if (save)
-		this->m_cnt++;
-	this->m_id = this->m_cnt;
+Shape::Shape(int x, int y, int width, int xvel, int yvel) {
+	Shape::ms_cnt++;
+	this->m_id = Shape::ms_cnt;
 	this->m_x = x;
 	this->m_y = y;
 	this->m_width = width;
 	this->m_colour = this->defaultBorderColour;
+	this->m_xvel = xvel;
+	this->m_yvel = yvel;
+	this->m_isSelected = false;
+}
+
+Shape::~Shape() {
+	Shape::ms_cnt--;
 }
 
 bool Shape::overlap(Shape& selected) {
 	bool overlap = false;
 
 	if (((this->getX() - (this->getWidth() / 2)) >= (selected.getX() + (selected.getWidth() / 2))
-		|| (selected.getX() - (selected.getWidth() / 2)) >= (this->getX() + (this->getWidth() / 2)))
+		|| (this->getX() + (this->getWidth() / 2)) <= (selected.getX() - (selected.getWidth() / 2)))
 		|| ((this->getY() - (this->getWidth() / 2)) >= (selected.getY() + (selected.getWidth() / 2))
-			|| (selected.getY() - (selected.getWidth() / 2)) >= (this->getY() + (this->getWidth() / 2))))
+		|| (this->getY() + (this->getWidth() / 2)) <= (selected.getY() - (selected.getWidth() / 2))))
 		overlap = false;
 	else if (this != &selected)
 		overlap = true;
@@ -77,6 +86,18 @@ Color Shape::getColour() {
 	return this->m_colour;
 }
 
+bool Shape::getSelected() {
+	return this->m_isSelected;
+}
+
+int Shape::getXVel() {
+	return this->m_xvel;
+}
+
+int Shape::getYVel() {
+	return this->m_yvel;
+}
+
 void Shape::setX(int x) {
 	this->m_x = x;
 }
@@ -99,5 +120,19 @@ void Shape::setColour(Color colour) {
 }
 
 int Shape::shapeCnt() {
-	return Shape::m_cnt;
+	return Shape::ms_cnt;
+}
+
+void Shape::move(int speed) {
+	this->m_x += this->m_xvel * speed;
+	this->m_y += this->m_yvel * speed;
+}
+
+void Shape::setVel(int x, int y) {
+	this->m_xvel = x * this->m_xvel;
+	this->m_yvel = y * this->m_yvel;
+}
+
+void Shape::setSelected(bool isSelected) {
+	this->m_isSelected = isSelected;
 }

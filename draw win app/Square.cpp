@@ -7,20 +7,31 @@ using namespace std;
 
 Square::Square() : Shape() {};
 
-Square::Square(int x, int y, int width, bool save) : Shape(x, y, width, save) {};
+Square::Square(int x, int y, int width, int xvel, int yvel) : Shape(x, y, width, xvel, yvel) {};
 
-void Square::draw(Gdiplus::Graphics& graphics) {
+void Square::draw(Gdiplus::Graphics& graphics, bool drawID) {
 	// pen info
 	Color penColor = this->getColour();
-	double penWidth = 3.0;
+	float penWidth = 3.0;
 	Pen pen(penColor, penWidth);
 
 	// draw square
 	RectF sqr(this->getX() - (this->getWidth() / 2), this->getY() - (this->getWidth() / 2), this->getWidth(), this->getWidth());
 	graphics.DrawRectangle(&pen, sqr);
 
+	// draw the selected border if the shape is selected
+	if (this->getSelected()) {
+		Color c = Color::LightGray;
+		float w = 3.0;
+		Pen p(c, w);
+
+		RectF border(this->getX() - (this->getWidth() / 2) - 3, this->getY() - (this->getWidth() / 2) - 3, this->getWidth() + 6, this->getWidth() + 6);
+		graphics.DrawRectangle(&p, border);
+	}
+
 	// call drawID
-	this->drawID(graphics);
+	if (drawID)
+		this->drawID(graphics);
 }
 
 ostream& Square::save(ostream& os) {
