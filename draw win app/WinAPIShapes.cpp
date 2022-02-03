@@ -21,6 +21,8 @@ size_t WinAPIShapes::ms_cnt{};
 WinAPIShapes* WinAPIShapes::ms_pWnd[100]{};
 size_t WinAPIShapes::ms_wndCnt{};
 
+wstring WinAPIShapes::ms_filename = L"";
+
 WinAPIShapes* WinAPIShapes::findWindow(HWND hWnd) {
     for (size_t i = 0; i < WinAPIShapes::ms_wndCnt; ++i) {
         if (WinAPIShapes::ms_pWnd[i]->m_hWnd == hWnd)
@@ -65,7 +67,7 @@ WinAPIShapes::WinAPIShapes()
         WinAPIShapes::ms_isRegistered = true;
     }
 
-    this->m_filename = "shapes.txt";
+    WinAPIShapes::ms_filename = L"shapes.txt";
 }
 
 //  FUNCTION: MyRegisterClass()
@@ -147,7 +149,7 @@ LRESULT CALLBACK WinAPIShapes::WndProc(UINT message, WPARAM wParam, LPARAM lPara
 			break;
 		}
 	}
-    return  DefWindowProc(this->m_hWnd, message, wParam, lParam);
+    return DefWindowProc(this->m_hWnd, message, wParam, lParam);
 }
 
 void WinAPIShapes::onPaint(WPARAM wParam, LPARAM lParam) {
@@ -486,41 +488,45 @@ void WinAPIShapes::onNCCalcSize(WPARAM wParam, LPARAM lParam) {
 }
 
 void WinAPIShapes::loadFile() {
-    this->m_file.open(this->m_filename);
+    std::wifstream ifile;
+    ifile.open(WinAPIShapes::ms_filename, ios::in);
 
     // read from the file
-    if (this->m_file.is_open()) {
+    if (ifile.is_open()) {
         int size;
-        this->m_file >> size;
-        this->m_file.ignore(1);
+        ifile >> size;
+        ifile.ignore(1);
 
         for (int i = 0; i < size; i++) {
-            char iden = this->m_file.peek();
+            char iden = ifile.peek();
             Shape* s = shapeFactory(iden);
 
-            s->load(this->m_file);
+            s->load(ifile);
 
             this->m_shapes.push_back(s);
         }
     }
 
-    this->m_file.close();
+    ifile.close();
 }
 
 void WinAPIShapes::saveFile() {
     // open a file
-    this->m_file.open(this->m_filename);
+    //std::replace(WinAPIShapes::ms_filename.begin(), WinAPIShapes::ms_filename.end(), '\\', '/');
+    //std::replace(WinAPIShapes::ms_filename.begin(), WinAPIShapes::ms_filename.end(), "TXT", "txt");
+    std::wofstream wfile;
+    wfile.open(WinAPIShapes::ms_filename, ios::out);
 
     // edit the file
-    if (this->m_file.is_open()) {
-        this->m_file << this->m_shapes.size() << endl;
+    if (wfile.is_open()) {
+        wfile << this->m_shapes.size() << endl;
         for (auto it = this->m_shapes.begin(); it != this->m_shapes.end(); it++) {
-            (*it)->save(this->m_file);
+            (*it)->save(wfile);
         }
     }
 
     // close the file
-    this->m_file.close();
+    wfile.close();
 }
 
 void WinAPIShapes::moveShape(LPARAM lParam, Shape* s, int x, int y) {
@@ -635,6 +641,10 @@ bool WinAPIShapes::isOnShape(int x, int y) {
     }
 
     return onShape;
+}
+
+void WinAPIShapes::setFileName(WCHAR name[]) {
+    WinAPIShapes::ms_filename = std::wstring(name);
 }
 
 RECT* WinAPIShapes::fusedRect(RECT r1, RECT r2) {

@@ -34,12 +34,12 @@ void Square::draw(Gdiplus::Graphics& graphics, bool drawID) {
 		this->drawID(graphics);
 }
 
-ostream& Square::save(ostream& os) {
+wostream& Square::save(wostream& os) {
 	os << "s" << " " << this->getX() << " " << this->getY() << " " << this->getWidth() << " " << (int)this->getColour().GetRed() << " " << (int)this->getColour().GetGreen() << " " << (int)this->getColour().GetBlue() << endl;
 	return os;
 }
 
-istream& Square::load(istream& is) {
+wistream& Square::load(wistream& is) {
 	is.ignore(2);
 
 	// set values from text file

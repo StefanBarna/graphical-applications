@@ -36,11 +36,17 @@ protected:
 	// on command
 	INT_PTR onCommand(WPARAM wParam, LPARAM lParam);
 
+	// on wm_setfont
+	INT_PTR onSetFont(WPARAM wParam, LPARAM lParam);
+
 	// when the 'ok' button is clicked
 	void onOk(WPARAM wParam, LPARAM lParam);
 
-	// then the 'colour' button is clicked
+	// when the 'colour' button is clicked
 	void onColour(WPARAM wParam, LPARAM lParam);
+
+	// when the 'file' button is clicked
+	void onFile(WPARAM wParam, LPARAM lParam);
 
 public:
 	// default constructor

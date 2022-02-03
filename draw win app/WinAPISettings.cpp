@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <gdiplus.h>
 #include <Commctrl.h>
+#include <strsafe.h>
 
 #include "WinAPISettings.h"
 #include "WinAPIShapes.h"
@@ -11,7 +12,7 @@
 // - find out more about the shader files
 // - open/save file dialog
 // - animation in DirectX
-// - custom 
+// - custom component
 // - DirectX antialiasing
 
 WinAPISettings::MessageMap WinAPISettings::ms_msgMap[100]{};
@@ -26,6 +27,7 @@ void WinAPISettings::staticConstructor() {
 
 	// onCommand
     WinAPISettings::hReg(WM_COMMAND, &WinAPISettings::onCommand);
+
 }
 
 void WinAPISettings::hReg(UINT message, MessageHandler hMsg) {
@@ -58,6 +60,14 @@ INT_PTR CALLBACK WinAPISettings::WndProcClass(HWND hWnd, UINT message, WPARAM wP
             dlg->m_hDlg = hWnd;
             // add preexisting values for RGB and width
         }
+        switch (message) {
+        case WM_SETFONT: {
+            
+        } break;
+        }
+        TCHAR buffer[128]{};
+        StringCchPrintf(buffer, 128, TEXT("message: %04X\n"), message);
+        OutputDebugString(buffer);
     }
     if (dlg != nullptr)
         return dlg->WndProc(message, wParam, lParam);
@@ -75,18 +85,15 @@ LRESULT CALLBACK WinAPISettings::WndProc(UINT message, WPARAM wParam, LPARAM lPa
 }
 
 INT_PTR WinAPISettings::onInitDialog(WPARAM wParam, LPARAM lParam) {
-    wchar_t buffer[256];
-    wsprintfW(buffer, L"%d", Shape::defaultWidth);
-    ::SetDlgItemText(this->m_hDlg, IDC_WIDTH_INPUT, buffer);
-    wsprintfW(buffer, L"%d", (int)(Shape::defaultBorderColour.GetRed()));
-    ::SetDlgItemText(this->m_hDlg, IDC_RED_INPUT, buffer);
-    wsprintfW(buffer, L"%d", (int)(Shape::defaultBorderColour.GetGreen()));
-    ::SetDlgItemText(this->m_hDlg, IDC_GREEN_INPUT, buffer);
-    wsprintfW(buffer, L"%d", (int)(Shape::defaultBorderColour.GetBlue()));
-    ::SetDlgItemText(this->m_hDlg, IDC_BLUE_INPUT, buffer);
-
-
     SendMessage(this->m_hDlg, TBM_SETRANGE, (WPARAM)FALSE, MAKELPARAM(0, 20));
+    return (INT_PTR)TRUE;
+}
+
+INT_PTR WinAPISettings::onSetFont(WPARAM wParam, LPARAM lParam) {
+    HFONT hFont = CreateFont(13, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
+        OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+        DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma"));
+    SendMessage(this->m_hDlg, WM_SETFONT, (LPARAM)hFont, TRUE);
     return (INT_PTR)TRUE;
 }
 
@@ -101,6 +108,9 @@ INT_PTR WinAPISettings::onCommand(WPARAM wParam, LPARAM lParam) {
     } break;
     case IDC_COLOURCHOOSE: {
         this->onColour(wParam, lParam);
+    } break;
+    case IDC_FILECHOOSE: {
+        this->onFile(wParam, lParam);
     } break;
     }
     return (INT_PTR)FALSE;
@@ -121,6 +131,9 @@ void WinAPISettings::onOk(WPARAM wParam, LPARAM lParam) {
 
     // delete tchar strings
     delete[] widthBuffer;
+
+    // close the dialog
+    EndDialog(this->m_hDlg, (LOWORD(wParam)));
 }
 
 void WinAPISettings::onColour(WPARAM wParam, LPARAM lParam) {
@@ -138,6 +151,32 @@ void WinAPISettings::onColour(WPARAM wParam, LPARAM lParam) {
     if (ChooseColor(&cc) == TRUE) {
         Shape::defaultBorderColour.SetFromCOLORREF(cc.rgbResult);
         // GetRValue(cc.rgbResult), GetGValue(cc.rgbResult), GetBValue(cc.rgbResult)
+    }
+}
+
+void WinAPISettings::onFile(WPARAM wParam, LPARAM lParam) {
+    OPENFILENAME ofn;   // common dialog box structure
+    WCHAR szFile[260];   // buffer for the file name
+    HANDLE hf;          // file handle
+
+    // initialize OPENFILENAME
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = this->m_hDlg;
+    ofn.lpstrFile = szFile;
+    // set lpstrFile[0] to '\0' so that GetOpenFileName does not use the contents of szFile to initialize itself
+    ofn.lpstrFile[0] = '\0';
+    ofn.nMaxFile = sizeof(szFile);
+    ofn.lpstrFilter = L"All\0*.*\0Text\0*.TXT\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    // display the open dialog box
+    if (GetOpenFileName(&ofn) == TRUE) {
+        WinAPIShapes::setFileName(szFile);
     }
 }
 

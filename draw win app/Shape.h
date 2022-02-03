@@ -57,14 +57,14 @@ public:
 	/// </summary>
 	/// <param name="os">the stream to which a shape is saved</param>
 	/// <returns>the stream received as parameter</returns>
-	virtual std::ostream& save(std::ostream& os) = 0;
+	virtual std::wostream& save(std::wostream& os) = 0;
 
 	/// <summary>
 	/// loads information about a shape from an istream
 	/// </summary>
 	/// <param name="os">the stream from which information about a shape is taken</param>
 	/// <returns>the stream received as parameter</returns>
-	virtual std::istream& load(std::istream& is) = 0;
+	virtual std::wistream& load(std::wistream& is) = 0;
 
 	/// <summary>
 	/// returns whether the parameter Shape is overlapping with the current instance

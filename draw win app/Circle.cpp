@@ -39,12 +39,12 @@ void Circle::draw(Graphics& graphics, bool drawID) {
 		this->drawID(graphics);
 }
 
-ostream& Circle::save(ostream& os) {
+wostream& Circle::save(wostream& os) {
 	os << "c" << " " << this->getX() << " " << this->getY() << " " << this->m_radius << " " << (int)this->getColour().GetRed() << " " << (int)this->getColour().GetGreen() << " " << (int)this->getColour().GetBlue() << endl;
 	return os;
 }
 
-istream& Circle::load(istream& is) {
+wistream& Circle::load(wistream& is) {
 	is.ignore(2);
 
 	// set values from text file
