@@ -39,12 +39,10 @@ class WinAPIShapes {
 
 	static WinAPIShapes* findWindow(HWND);
 
-	static std::wstring ms_filename;	// save file name
-
 	// private variables
 	std::list<Shape*> m_shapes{};		// list of shapes
-	std::wfstream m_file{};				// save file fstream
-	
+	std::wstring m_filename;			// save file name
+
 	struct selectedShape
 	{
 		Shape* s;	// shape selected
@@ -111,6 +109,15 @@ protected:
 	// on every timer tick
 	void onTimer(WPARAM wParam, LPARAM lParam);
 
+	// when the file's name is to be changed
+	void onFileChange(WPARAM wParam, LPARAM lParam);
+
+	// when the 'open' button is clicked
+	void onFileOpen(WPARAM wParam, LPARAM lParam);
+
+	// when the 'save' button is clicked
+	void onFileSave(WPARAM wParam, LPARAM lParam);
+
 	// change client area
 	void onNCCalcSize(WPARAM wParam, LPARAM lParam);
 
@@ -174,9 +181,6 @@ public:
 
 	// sets the window handle
 	void setWindow(HWND hWnd) { if (this->m_hWnd == 0) this->m_hWnd = hWnd; } // a Bad Workaround (temporary)
-
-	// sets the save file
-	static void setFileName(WCHAR name[]);
 
 	// default constructor
 	WinAPIShapes();

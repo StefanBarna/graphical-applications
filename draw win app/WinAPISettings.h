@@ -45,8 +45,14 @@ protected:
 	// when the 'colour' button is clicked
 	void onColour(WPARAM wParam, LPARAM lParam);
 
-	// when the 'file' button is clicked
-	void onFile(WPARAM wParam, LPARAM lParam);
+	// when the 'open' button is clicked
+	void onFileOpen(WPARAM wParam, LPARAM lParam);
+
+	// when the 'save' button is clicked
+	void onFileSave(WPARAM wParam, LPARAM lParam);
+
+	// when the 'save as' button is clicked
+	void onFileSaveAs(WPARAM wParam, LPARAM lParam);
 
 public:
 	// default constructor

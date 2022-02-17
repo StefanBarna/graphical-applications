@@ -9,9 +9,6 @@
 #include "resource.h"
 
 // TODO for next class
-// - find out more about the shader files
-// - open/save file dialog
-// - animation in DirectX
 // - custom component
 // - DirectX antialiasing
 
@@ -49,16 +46,16 @@ WinAPISettings* WinAPISettings::findWindow(HWND hDlg) {
     return nullptr;
 }
 
+#define ID_CUSTOMCTRL 299
+
 INT_PTR CALLBACK WinAPISettings::WndProcClass(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     WinAPISettings* dlg = WinAPISettings::findWindow(hWnd);
 
     if (dlg == nullptr) {
         if (message == WM_INITDIALOG) {
             // convert lparam to winapisettings
-            int a{};
             dlg = (WinAPISettings*)lParam;
             dlg->m_hDlg = hWnd;
-            // add preexisting values for RGB and width
         }
         switch (message) {
         case WM_SETFONT: {
@@ -69,7 +66,7 @@ INT_PTR CALLBACK WinAPISettings::WndProcClass(HWND hWnd, UINT message, WPARAM wP
         StringCchPrintf(buffer, 128, TEXT("message: %04X\n"), message);
         OutputDebugString(buffer);
     }
-    if (dlg != nullptr)
+    else if (dlg != nullptr)
         return dlg->WndProc(message, wParam, lParam);
 
     // a nice way to discard messages
@@ -109,8 +106,14 @@ INT_PTR WinAPISettings::onCommand(WPARAM wParam, LPARAM lParam) {
     case IDC_COLOURCHOOSE: {
         this->onColour(wParam, lParam);
     } break;
-    case IDC_FILECHOOSE: {
-        this->onFile(wParam, lParam);
+    case IDC_FILEOPEN: {
+        this->onFileOpen(wParam, lParam);
+    } break;
+    case IDC_FILESAVE: {
+        this->onFileSave(wParam, lParam);
+    } break;
+    case IDC_FILESAVEAS: {
+        this->onFileSaveAs(wParam, lParam);
     } break;
     }
     return (INT_PTR)FALSE;
@@ -154,7 +157,7 @@ void WinAPISettings::onColour(WPARAM wParam, LPARAM lParam) {
     }
 }
 
-void WinAPISettings::onFile(WPARAM wParam, LPARAM lParam) {
+void WinAPISettings::onFileOpen(WPARAM wParam, LPARAM lParam) {
     OPENFILENAME ofn;   // common dialog box structure
     WCHAR szFile[260];   // buffer for the file name
     HANDLE hf;          // file handle
@@ -176,7 +179,39 @@ void WinAPISettings::onFile(WPARAM wParam, LPARAM lParam) {
 
     // display the open dialog box
     if (GetOpenFileName(&ofn) == TRUE) {
-        WinAPIShapes::setFileName(szFile);
+        SendMessage(GetParent(this->m_hDlg), ID_FILECHANGE, wParam, (LPARAM)((LPCTSTR)szFile));
+        SendMessage(GetParent(this->m_hDlg), IDC_FILEOPEN, wParam, lParam);
+    }
+}
+
+void WinAPISettings::onFileSave(WPARAM wParam, LPARAM lParam) {
+    SendMessage(GetParent(this->m_hDlg), IDC_FILESAVE, wParam, lParam);
+}
+
+void WinAPISettings::onFileSaveAs(WPARAM wParam, LPARAM lParam) {
+    OPENFILENAME ofn;   // common dialog box structure
+    WCHAR szFile[260];   // buffer for the file name
+    HANDLE hf;          // file handle
+
+    // initialize OPENFILENAME
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = this->m_hDlg;
+    ofn.lpstrFile = szFile;
+    // set lpstrFile[0] to '\0' so that GetOpenFileName does not use the contents of szFile to initialize itself
+    ofn.lpstrFile[0] = '\0';
+    ofn.nMaxFile = sizeof(szFile);
+    ofn.lpstrFilter = L"All\0*.*\0Text\0*.TXT\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    // display the open dialog box
+    if (GetOpenFileName(&ofn) == TRUE) {
+        SendMessage(GetParent(this->m_hDlg), ID_FILECHANGE, wParam, (LPARAM)((LPCTSTR)szFile));
+        SendMessage(GetParent(this->m_hDlg), IDC_FILESAVE, wParam, lParam);
     }
 }
 

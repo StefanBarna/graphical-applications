@@ -136,3 +136,7 @@ void Shape::setVel(int x, int y) {
 void Shape::setSelected(bool isSelected) {
 	this->m_isSelected = isSelected;
 }
+
+void Shape::resetCnt() {
+	Shape::ms_cnt = 0;
+}

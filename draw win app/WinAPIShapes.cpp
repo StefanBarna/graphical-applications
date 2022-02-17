@@ -21,8 +21,6 @@ size_t WinAPIShapes::ms_cnt{};
 WinAPIShapes* WinAPIShapes::ms_pWnd[100]{};
 size_t WinAPIShapes::ms_wndCnt{};
 
-wstring WinAPIShapes::ms_filename = L"";
-
 WinAPIShapes* WinAPIShapes::findWindow(HWND hWnd) {
     for (size_t i = 0; i < WinAPIShapes::ms_wndCnt; ++i) {
         if (WinAPIShapes::ms_pWnd[i]->m_hWnd == hWnd)
@@ -67,7 +65,7 @@ WinAPIShapes::WinAPIShapes()
         WinAPIShapes::ms_isRegistered = true;
     }
 
-    WinAPIShapes::ms_filename = L"shapes.txt";
+    this->m_filename = L"shapes.txt";
 }
 
 //  FUNCTION: MyRegisterClass()
@@ -131,6 +129,15 @@ void WinAPIShapes::staticConstructor() {
     // onTimer
     WinAPIShapes::hReg(WM_TIMER, &WinAPIShapes::onTimer);
 
+    // onFileChange
+    WinAPIShapes::hReg(ID_FILECHANGE, &WinAPIShapes::onFileChange);
+
+    // onFileOpen
+    WinAPIShapes::hReg(IDC_FILEOPEN, &WinAPIShapes::onFileOpen);
+
+    // onFileOpen
+    WinAPIShapes::hReg(IDC_FILESAVE, &WinAPIShapes::onFileSave);
+
     // onCalcSize
     WinAPIShapes::hReg(WM_NCCALCSIZE, &WinAPIShapes::onNCCalcSize);
 }
@@ -193,6 +200,30 @@ void WinAPIShapes::onCreate(WPARAM wParam, LPARAM lParam) {
         NULL, 
         (HINSTANCE)GetWindowLongPtr(this->m_hWnd, GWLP_HINSTANCE), 
         NULL);
+
+    // dealing with the custom control
+    HWND h_Ctrl = CreateWindow(
+        TEXT("MyCustomCtrl"),
+        //WC_LISTBOX,
+        TEXT("Custom control text is annoying"),
+        WS_CHILD | WS_VISIBLE,
+        20,
+        100,
+        50,
+        50,
+        this->m_hWnd,
+        nullptr,
+        //GetModuleHandle(NULL),
+        (HINSTANCE)GetWindowLongPtr(this->m_hWnd, GWLP_HINSTANCE),
+        nullptr
+    );
+
+    if (h_Ctrl == nullptr) {
+        auto result = GetLastError();
+        MessageBox(this->m_hWnd, TEXT("we messed up"), TEXT("Creation Result"), MB_OK);
+    }
+    else
+        MessageBox(this->m_hWnd, TEXT("success"), TEXT("Creation Result"), MB_OK);
 
     this->loadFile();
 
@@ -480,6 +511,19 @@ void WinAPIShapes::onTimer(WPARAM wParam, LPARAM lParam) {
     RedrawWindow(this->m_hWnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 }
 
+void WinAPIShapes::onFileChange(WPARAM wParam, LPARAM lParam) {
+    this->m_filename = LPCTSTR(lParam);
+}
+
+void WinAPIShapes::onFileOpen(WPARAM wParam, LPARAM lParam) {
+    this->loadFile();
+    RedrawWindow(this->m_hWnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+}
+
+void WinAPIShapes::onFileSave(WPARAM wParam, LPARAM lParam) {
+    this->saveFile();
+}
+
 // TODO: ask about this in class
 void WinAPIShapes::onNCCalcSize(WPARAM wParam, LPARAM lParam) {
     //LPNCCALCSIZE_PARAMS pncc = (LPNCCALCSIZE_PARAMS)lParam;
@@ -489,7 +533,11 @@ void WinAPIShapes::onNCCalcSize(WPARAM wParam, LPARAM lParam) {
 
 void WinAPIShapes::loadFile() {
     std::wifstream ifile;
-    ifile.open(WinAPIShapes::ms_filename, ios::in);
+    ifile.open(this->m_filename, ios::in);
+
+    // clear previous data
+    this->m_shapes.clear();
+    Shape::resetCnt();
 
     // read from the file
     if (ifile.is_open()) {
@@ -512,10 +560,8 @@ void WinAPIShapes::loadFile() {
 
 void WinAPIShapes::saveFile() {
     // open a file
-    //std::replace(WinAPIShapes::ms_filename.begin(), WinAPIShapes::ms_filename.end(), '\\', '/');
-    //std::replace(WinAPIShapes::ms_filename.begin(), WinAPIShapes::ms_filename.end(), "TXT", "txt");
     std::wofstream wfile;
-    wfile.open(WinAPIShapes::ms_filename, ios::out);
+    wfile.open(this->m_filename, ios::out);
 
     // edit the file
     if (wfile.is_open()) {
@@ -641,10 +687,6 @@ bool WinAPIShapes::isOnShape(int x, int y) {
     }
 
     return onShape;
-}
-
-void WinAPIShapes::setFileName(WCHAR name[]) {
-    WinAPIShapes::ms_filename = std::wstring(name);
 }
 
 RECT* WinAPIShapes::fusedRect(RECT r1, RECT r2) {

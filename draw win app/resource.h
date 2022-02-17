@@ -36,8 +36,12 @@
 #define IDC_FILE_HEADER                 1017
 #define IDC_SLIDER1                     1020
 #define IDC_COLOURCHOOSE                1021
-#define IDC_FILECHOOSE                  1023
+#define IDC_FILEOPEN                    1023
 #define IDC_CUSTOM1                     1024
+#define IDC_FILESAVEAS                  1025
+#define IDC_FILESAVE                    1026
+#define ID_FILECHANGE                   1027
+#define IDC_CUSTOM2                     1027
 #define ID_EDIT_SETTINGS                32771
 #define IDC_STATIC                      -1
 
@@ -48,7 +52,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32772
-#define _APS_NEXT_CONTROL_VALUE         1025
+#define _APS_NEXT_CONTROL_VALUE         1028
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

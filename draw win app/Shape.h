@@ -182,6 +182,12 @@ public:
 	/// </summary>
 	/// <param name="isSelected">whether the shape is selected or not</param>
 	void setSelected(bool isSelected);
+
+	/// <summary>
+	/// resets shape counting
+	/// IDs will rebegin at 0
+	/// </summary>
+	static void resetCnt();
 };
 
 #endif

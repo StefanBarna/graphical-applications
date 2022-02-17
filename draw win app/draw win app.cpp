@@ -67,6 +67,7 @@ HINSTANCE hInst;                                // current instance
 //LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    SettingsWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK CustomCtrl(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -75,6 +76,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
+
+    // registering custom control
+//    {
+//        // TODO: WNDCLASS works but WNDCLASSEX doesn't work
+//        // what attributes are you missing?
+//        WNDCLASS wcex{};
+//
+////        wcex.cbSize = sizeof(WNDCLASSEX);
+//
+//        //wcex.style = WS_CHILD | WS_VISIBLE;
+//        wcex.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW;
+//        wcex.lpfnWndProc = CustomCtrl;
+//        //wcex.hInstance = hInstance;
+//        wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+//        //wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+//        wcex.lpszClassName = TEXT("MyCustomCtrl");
+//        
+//        auto res = RegisterClass(&wcex);
+//
+//        if (res == 0) {
+//            auto result = GetLastError();
+//            MessageBox(0, TEXT("we messed up"), TEXT("Creation Result"), MB_OK);
+//        }
+//        else
+//            MessageBox(0, TEXT("success"), TEXT("Creation Result"), MB_OK);
+//    }
 
     // TODO: Place code here.
     WinAPIShapes::staticConstructor();
@@ -137,6 +164,25 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             return (INT_PTR)TRUE;
         }
         break;
+    }
+    return (INT_PTR)FALSE;
+}
+
+LRESULT CALLBACK CustomCtrl(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_CREATE:
+        return (INT_PTR)TRUE;
+
+    case WM_SETFONT:
+        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+        {
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        }
+        break;
+    case WM_PAINT: {}
     }
     return (INT_PTR)FALSE;
 }
