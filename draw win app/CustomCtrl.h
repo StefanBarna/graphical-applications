@@ -4,6 +4,12 @@
 #include <Windows.h>
 #include "WinAPISettings.h"
 
+void RegisterControl(HINSTANCE hInstance);
+
+HWND CreateControl(HWND hWnd);
+
+LRESULT CALLBACK CustomCtrl(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 /*class CustomCtrl {
 	HWND m_hWnd{};	// a handle to the current window (identifier)
 

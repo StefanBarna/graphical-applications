@@ -103,9 +103,9 @@ INT_PTR WinAPISettings::onCommand(WPARAM wParam, LPARAM lParam) {
         ::EndDialog(this->m_hDlg, LOWORD(wParam));
         return (INT_PTR)TRUE;
     } break;
-    case IDC_COLOURCHOOSE: {
+    /*case IDC_COLOURCHOOSE: {
         this->onColour(wParam, lParam);
-    } break;
+    } break;*/
     case IDC_FILEOPEN: {
         this->onFileOpen(wParam, lParam);
     } break;
@@ -139,23 +139,23 @@ void WinAPISettings::onOk(WPARAM wParam, LPARAM lParam) {
     EndDialog(this->m_hDlg, (LOWORD(wParam)));
 }
 
-void WinAPISettings::onColour(WPARAM wParam, LPARAM lParam) {
-    CHOOSECOLOR cc;                 // common dialog box structure
-    static COLORREF acrCustClr[16]; // array of custom color
-
-    // initialize CHOOSECOLOR
-    ZeroMemory(&cc, sizeof(cc));
-    cc.lStructSize = sizeof(cc);
-    cc.hwndOwner = this->m_hDlg;
-    cc.lpCustColors = (LPDWORD)acrCustClr;
-    cc.rgbResult = (DWORD)RGB(Shape::defaultBorderColour.GetRed(), Shape::defaultBorderColour.GetGreen(), Shape::defaultBorderColour.GetBlue());
-    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-
-    if (ChooseColor(&cc) == TRUE) {
-        Shape::defaultBorderColour.SetFromCOLORREF(cc.rgbResult);
-        // GetRValue(cc.rgbResult), GetGValue(cc.rgbResult), GetBValue(cc.rgbResult)
-    }
-}
+//void WinAPISettings::onColour(WPARAM wParam, LPARAM lParam) {
+//    CHOOSECOLOR cc;                 // common dialog box structure
+//    static COLORREF acrCustClr[16]; // array of custom color
+//
+//    // initialize CHOOSECOLOR
+//    ZeroMemory(&cc, sizeof(cc));
+//    cc.lStructSize = sizeof(cc);
+//    cc.hwndOwner = this->m_hDlg;
+//    cc.lpCustColors = (LPDWORD)acrCustClr;
+//    cc.rgbResult = (DWORD)RGB(Shape::defaultBorderColour.GetRed(), Shape::defaultBorderColour.GetGreen(), Shape::defaultBorderColour.GetBlue());
+//    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+//
+//    if (ChooseColor(&cc) == TRUE) {
+//        Shape::defaultBorderColour.SetFromCOLORREF(cc.rgbResult);
+//        // GetRValue(cc.rgbResult), GetGValue(cc.rgbResult), GetBValue(cc.rgbResult)
+//    }
+//}
 
 void WinAPISettings::onFileOpen(WPARAM wParam, LPARAM lParam) {
     OPENFILENAME ofn;   // common dialog box structure
