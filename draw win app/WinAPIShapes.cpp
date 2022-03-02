@@ -11,6 +11,7 @@
 #include "Utilities.h"
 #include "WinAPIShapes.h"
 #include "WinAPISettings.h"
+#include "CustomCtrl.h"
 
 using namespace Gdiplus;
 using namespace std;
@@ -200,30 +201,6 @@ void WinAPIShapes::onCreate(WPARAM wParam, LPARAM lParam) {
         NULL, 
         (HINSTANCE)GetWindowLongPtr(this->m_hWnd, GWLP_HINSTANCE), 
         NULL);
-
-    // dealing with the custom control
-    HWND h_Ctrl = CreateWindow(
-        TEXT("MyCustomCtrl"),
-        //WC_LISTBOX,
-        TEXT("Custom control text is annoying"),
-        WS_CHILD | WS_VISIBLE,
-        20,
-        100,
-        50,
-        50,
-        this->m_hWnd,
-        nullptr,
-        //GetModuleHandle(NULL),
-        (HINSTANCE)GetWindowLongPtr(this->m_hWnd, GWLP_HINSTANCE),
-        nullptr
-    );
-
-    if (h_Ctrl == nullptr) {
-        auto result = GetLastError();
-        MessageBox(this->m_hWnd, TEXT("we messed up"), TEXT("Creation Result"), MB_OK);
-    }
-    else
-        MessageBox(this->m_hWnd, TEXT("success"), TEXT("Creation Result"), MB_OK);
 
     this->loadFile();
 
