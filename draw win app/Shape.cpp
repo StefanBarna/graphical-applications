@@ -51,7 +51,7 @@ bool Shape::overlap(Shape& selected) {
 void Shape::drawID(Graphics& graphics) {
 	// parameters for text
 	Font myFont(L"Tahoma", 14);
-	Gdiplus::SolidBrush brush(Color::Black);
+	SolidBrush brush(Color::Black);
 	TCHAR ID[31]; // maximum ID is 10^31
 	StringCchPrintf(ID, 31, TEXT("%d"), this->m_id);
 

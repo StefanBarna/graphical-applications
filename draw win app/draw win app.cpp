@@ -20,10 +20,6 @@
 
 // TODO: speed control via a slider
 
-// TODO: allow each message to send its own return type
-// TODO: create custom control for selecting colour in settings
-// TODO: make this control a class
-
 #include <list>
 #include <Windows.h>
 #include <CommCtrl.h>
@@ -41,7 +37,6 @@
 #include "Utilities.h"
 #include "WinAPIShapes.h"
 #include "WinAPISettings.h"
-#include "CustomCtrl.h"
 
 using namespace Gdiplus;
 using namespace std;
@@ -83,7 +78,30 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // registering custom control
-    RegisterControl(hInstance);
+//    {
+//        // TODO: WNDCLASS works but WNDCLASSEX doesn't work
+//        // what attributes are you missing?
+//        WNDCLASS wcex{};
+//
+////        wcex.cbSize = sizeof(WNDCLASSEX);
+//
+//        //wcex.style = WS_CHILD | WS_VISIBLE;
+//        wcex.style = CS_GLOBALCLASS | CS_HREDRAW | CS_VREDRAW;
+//        wcex.lpfnWndProc = CustomCtrl;
+//        //wcex.hInstance = hInstance;
+//        wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+//        //wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+//        wcex.lpszClassName = TEXT("MyCustomCtrl");
+//        
+//        auto res = RegisterClass(&wcex);
+//
+//        if (res == 0) {
+//            auto result = GetLastError();
+//            MessageBox(0, TEXT("we messed up"), TEXT("Creation Result"), MB_OK);
+//        }
+//        else
+//            MessageBox(0, TEXT("success"), TEXT("Creation Result"), MB_OK);
+//    }
 
     // TODO: Place code here.
     WinAPIShapes::staticConstructor();
@@ -127,9 +145,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // shut down GDI+
     Gdiplus::GdiplusShutdown(m_gdiplusToken);
 
-    // unregister the class
-    UnregisterClass(TEXT("MyCustomCtrl"), NULL);
-
     return (int) msg.wParam;
 }
 
@@ -153,21 +168,21 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return (INT_PTR)FALSE;
 }
 
-//LRESULT CALLBACK CustomCtrl(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-//{
-//    switch (message)
-//    {
-//    case WM_CREATE:
-//        return (INT_PTR)TRUE;
-//
-//    case WM_SETFONT:
-//        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-//        {
-//            EndDialog(hDlg, LOWORD(wParam));
-//            return (INT_PTR)TRUE;
-//        }
-//        break;
-//    case WM_PAINT: {}
-//    }
-//    return (INT_PTR)FALSE;
-//}
+LRESULT CALLBACK CustomCtrl(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_CREATE:
+        return (INT_PTR)TRUE;
+
+    case WM_SETFONT:
+        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+        {
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        }
+        break;
+    case WM_PAINT: {}
+    }
+    return (INT_PTR)FALSE;
+}
