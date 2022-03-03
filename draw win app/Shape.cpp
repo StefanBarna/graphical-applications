@@ -48,7 +48,7 @@ bool Shape::overlap(Shape& selected) {
 	return overlap;
 }
 
-void Shape::drawID(Graphics& graphics) {
+void Shape::drawID(Gdiplus::Graphics& graphics) {
 	// parameters for text
 	Font myFont(L"Tahoma", 14);
 	SolidBrush brush(Color::Black);

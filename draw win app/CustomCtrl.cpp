@@ -1,6 +1,8 @@
 #include <Windows.h>
 #include <gdiplus.h>
 #include <Uxtheme.h>
+#include <string.h>
+#include <strsafe.h>
 #include "CustomCtrl.h"
 #include "WinAPIShapes.h"
 #include "Shape.h"
@@ -61,29 +63,22 @@ LRESULT CALLBACK CustomCtrl(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
         GetClientRect(hWnd, &rect); // gets the custom control dimensions
         hdc = BeginPaint(hWnd, &ps);
         SetBkMode(hdc, TRANSPARENT);
+        Gdiplus::Graphics graphics(hdc);
+        graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
 
-        //SetTextColor(hdc, RGB(255, 87, 34));
-        //if (isClick)
-        //    DrawText(hdc, TEXT("Click"), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-        //else
-        //    DrawText(hdc, TEXT("Custom Control"), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+        // draw in a coloured square
+        int width = rect.bottom - rect.top - 8;
+        RectF sqr(rect.top + 4, rect.left + 4, width, width);
+        SolidBrush brush(Shape::defaultBorderColour);
+        graphics.FillRectangle(&brush, sqr);
 
-        HDC memDc;
-        RECT rc;
-        auto hbuf = ::BeginBufferedPaint(hdc, &rc, BPBF_COMPATIBLEBITMAP, nullptr, &memDc);
-
-        // if hbuf is not 0, do double buffering, otherwise do single buffering
-        Graphics graphics(memDc);
-
-        // calculate dimensions for coloured square
-        int width = rect.bottom - rect.top - 6;
-        RECT sqr;
-        sqr.top = rect.top + 3;
-        sqr.left = rect.left + 3;
-        sqr.bottom = sqr.top + width;
-        sqr.right = sqr.left + width;
-        HBRUSH brush = CreateSolidBrush(RGB(Shape::defaultBorderColour.GetRed(), Shape::defaultBorderColour.GetGreen(), Shape::defaultBorderColour.GetBlue()));
-        FillRect(hdc, &sqr, brush);
+        // print text
+        Font myFont(L"Arial", 8);
+        SolidBrush textBrush(Color::Black);
+        TCHAR hexVal[8];
+        StringCchPrintf(hexVal, 8, TEXT("#%02X%02X%02X"), Shape::defaultBorderColour.GetR(), Shape::defaultBorderColour.GetG(), Shape::defaultBorderColour.GetB());
+        PointF textOrigin(sqr.GetRight() + 3, rect.top + 5);
+        graphics.DrawString(hexVal, 7, &myFont, textOrigin, &textBrush);
 
         EndPaint(hWnd, &ps);
         return 0;
