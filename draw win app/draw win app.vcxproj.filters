@@ -45,7 +45,7 @@
     <ClInclude Include="WinAPISettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CustomCtrl.h">
+    <ClInclude Include="ColourCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -72,6 +72,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CustomCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ColourCtrl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

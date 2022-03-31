@@ -42,6 +42,7 @@
 #define IDC_FILESAVE                    1026
 #define ID_FILECHANGE                   1027
 #define IDC_CUSTOM2                     1027
+#define IDC_CHOOSECOLOUR                1027
 #define ID_EDIT_SETTINGS                32771
 #define IDC_STATIC                      -1
 

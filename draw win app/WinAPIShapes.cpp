@@ -179,7 +179,7 @@ void WinAPIShapes::onPaint(WPARAM wParam, LPARAM lParam) {
 
     ::EndBufferedPaint(hbuf, true);
     EndPaint(this->m_hWnd, &ps);
-    ReleaseDC(this->m_hWnd, memDc); // check if this is correct, might not be
+    ReleaseDC(this->m_hWnd, memDc);
     ReleaseDC(this->m_hWnd, hdc);
 }
 
@@ -359,6 +359,7 @@ void WinAPIShapes::onCommand(WPARAM wParam, LPARAM lParam) {
         WinAPISettings wndSetting;
         wndSetting.create(this->m_hWnd);
         // grab the data from object
+
         break;
     }
     case IDM_EXIT:

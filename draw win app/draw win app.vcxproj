@@ -140,7 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Circle.h" />
-    <ClInclude Include="CustomCtrl.h" />
+    <ClInclude Include="ColourCtrl.h" />
     <ClInclude Include="draw win app.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
@@ -153,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Circle.cpp" />
+    <ClCompile Include="ColourCtrl.cpp" />
     <ClCompile Include="CustomCtrl.cpp" />
     <ClCompile Include="draw win app.cpp" />
     <ClCompile Include="Shape.cpp" />

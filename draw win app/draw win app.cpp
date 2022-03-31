@@ -41,7 +41,7 @@
 #include "Utilities.h"
 #include "WinAPIShapes.h"
 #include "WinAPISettings.h"
-#include "CustomCtrl.h"
+#include "ColourCtrl.h"
 
 using namespace Gdiplus;
 using namespace std;
@@ -72,7 +72,6 @@ HINSTANCE hInst;                                // current instance
 //LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    SettingsWndProc(HWND, UINT, WPARAM, LPARAM);
-LRESULT CALLBACK CustomCtrl(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -82,7 +81,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    RegisterControl(hInstance);
+    //RegisterControl(hInstance);
 
     // TODO: Place code here.
     WinAPIShapes::staticConstructor();

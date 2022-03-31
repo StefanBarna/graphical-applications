@@ -43,7 +43,7 @@ protected:
 	void onOk(WPARAM wParam, LPARAM lParam);
 
 	// when the 'colour' button is clicked
-	//void onColour(WPARAM wParam, LPARAM lParam);
+	void onColour(WPARAM wParam, LPARAM lParam);
 
 	// when the 'open' button is clicked
 	void onFileOpen(WPARAM wParam, LPARAM lParam);

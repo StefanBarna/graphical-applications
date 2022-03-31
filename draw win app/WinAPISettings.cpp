@@ -7,10 +7,7 @@
 #include "WinAPIShapes.h"
 #include "Shape.h"
 #include "resource.h"
-
-// TODO for next class
-// - custom component
-// - DirectX antialiasing
+#include "ColourCtrl.h"
 
 WinAPISettings::MessageMap WinAPISettings::ms_msgMap[100]{};
 size_t WinAPISettings::ms_cnt{};
@@ -24,7 +21,6 @@ void WinAPISettings::staticConstructor() {
 
 	// onCommand
     WinAPISettings::hReg(WM_COMMAND, &WinAPISettings::onCommand);
-
 }
 
 void WinAPISettings::hReg(UINT message, MessageHandler hMsg) {
@@ -46,8 +42,6 @@ WinAPISettings* WinAPISettings::findWindow(HWND hDlg) {
     return nullptr;
 }
 
-#define ID_CUSTOMCTRL 299
-
 INT_PTR CALLBACK WinAPISettings::WndProcClass(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     WinAPISettings* dlg = WinAPISettings::findWindow(hWnd);
 
@@ -57,16 +51,12 @@ INT_PTR CALLBACK WinAPISettings::WndProcClass(HWND hWnd, UINT message, WPARAM wP
             dlg = (WinAPISettings*)lParam;
             dlg->m_hDlg = hWnd;
         }
-        switch (message) {
-        case WM_SETFONT: {
-            
-        } break;
-        }
+
         TCHAR buffer[128]{};
         StringCchPrintf(buffer, 128, TEXT("message: %04X\n"), message);
         OutputDebugString(buffer);
     }
-    else if (dlg != nullptr)
+    if (dlg != nullptr)
         return dlg->WndProc(message, wParam, lParam);
 
     // a nice way to discard messages
@@ -83,6 +73,11 @@ LRESULT CALLBACK WinAPISettings::WndProc(UINT message, WPARAM wParam, LPARAM lPa
 
 INT_PTR WinAPISettings::onInitDialog(WPARAM wParam, LPARAM lParam) {
     SendMessage(this->m_hDlg, TBM_SETRANGE, (WPARAM)FALSE, MAKELPARAM(0, 20));
+
+    ColourCtrl::staticConstructor();
+    ColourCtrl colourCtrl;
+    colourCtrl.create(this->m_hDlg);
+
     return (INT_PTR)TRUE;
 }
 
@@ -103,9 +98,9 @@ INT_PTR WinAPISettings::onCommand(WPARAM wParam, LPARAM lParam) {
         ::EndDialog(this->m_hDlg, LOWORD(wParam));
         return (INT_PTR)TRUE;
     } break;
-    /*case IDC_COLOURCHOOSE: {
+    case IDC_COLOURCHOOSE: {
         this->onColour(wParam, lParam);
-    } break;*/
+    } break;
     case IDC_FILEOPEN: {
         this->onFileOpen(wParam, lParam);
     } break;
@@ -139,23 +134,23 @@ void WinAPISettings::onOk(WPARAM wParam, LPARAM lParam) {
     EndDialog(this->m_hDlg, (LOWORD(wParam)));
 }
 
-//void WinAPISettings::onColour(WPARAM wParam, LPARAM lParam) {
-//    CHOOSECOLOR cc;                 // common dialog box structure
-//    static COLORREF acrCustClr[16]; // array of custom color
-//
-//    // initialize CHOOSECOLOR
-//    ZeroMemory(&cc, sizeof(cc));
-//    cc.lStructSize = sizeof(cc);
-//    cc.hwndOwner = this->m_hDlg;
-//    cc.lpCustColors = (LPDWORD)acrCustClr;
-//    cc.rgbResult = (DWORD)RGB(Shape::defaultBorderColour.GetRed(), Shape::defaultBorderColour.GetGreen(), Shape::defaultBorderColour.GetBlue());
-//    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-//
-//    if (ChooseColor(&cc) == TRUE) {
-//        Shape::defaultBorderColour.SetFromCOLORREF(cc.rgbResult);
-//        // GetRValue(cc.rgbResult), GetGValue(cc.rgbResult), GetBValue(cc.rgbResult)
-//    }
-//}
+void WinAPISettings::onColour(WPARAM wParam, LPARAM lParam) {
+    CHOOSECOLOR cc;                 // common dialog box structure
+    static COLORREF acrCustClr[16]; // array of custom color
+
+    // initialize CHOOSECOLOR
+    ZeroMemory(&cc, sizeof(cc));
+    cc.lStructSize = sizeof(cc);
+    cc.hwndOwner = this->m_hDlg;
+    cc.lpCustColors = (LPDWORD)acrCustClr;
+    cc.rgbResult = (DWORD)RGB(Shape::defaultBorderColour.GetRed(), Shape::defaultBorderColour.GetGreen(), Shape::defaultBorderColour.GetBlue());
+    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+    if (ChooseColor(&cc) == TRUE) {
+        Shape::defaultBorderColour.SetFromCOLORREF(cc.rgbResult);
+        // GetRValue(cc.rgbResult), GetGValue(cc.rgbResult), GetBValue(cc.rgbResult)
+    }
+}
 
 void WinAPISettings::onFileOpen(WPARAM wParam, LPARAM lParam) {
     OPENFILENAME ofn;   // common dialog box structure
